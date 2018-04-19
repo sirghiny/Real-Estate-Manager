@@ -6,17 +6,15 @@
 
 Clone the repository at:
 
-	https://sirghiny@bitbucket.org/cygnetanalytics/rem.git
-
-Rename the cloned directory to `rem` and move into it. 
+	https://github.com/sirghiny/real_estate_manager
 
 Create the necessary databases as suggested in `.env.sample`.
 
-Create `.env` in `rem`'s root directory:
+Create `.env` in `real_estate_manager`'s root directory:
 
 	`touch .env`
 
-Source the environment variables:
+Add and source the environment variables:
 
 	`source .env`
 
@@ -40,7 +38,7 @@ Everything's now set up!
 
 To run the tests:
 
-	`pytest`
+	`python -m pytest`
 
 To confirm `flake8` compliance:
 
