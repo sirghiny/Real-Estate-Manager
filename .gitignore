@@ -1,0 +1,14 @@
+__pycache__/
+venv/
+database-designs/models.mwb.bak
+to_do.txt
+main.pyc
+tests/testing.db
+.cache
+.coverage
+.DS_Store
+.env
+.pytest_cache/
+.vscode
+
+

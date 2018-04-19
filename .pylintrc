@@ -1,0 +1,3 @@
+[MASTER]
+
+ignore = database-designs, migrations, venv, .env, .env.sample, .flake8, .gitignore, Procfile, pytest.ini, README.md, requirements.txt, to_do.txt, main.py

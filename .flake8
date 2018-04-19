@@ -1,0 +1,10 @@
+[flake8]
+
+exclude = .circle,
+          .git,
+		  .vscode,
+          __pycache__,
+          migrations/,
+          venv
+         
+         
