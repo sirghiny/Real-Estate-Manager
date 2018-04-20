@@ -55,7 +55,7 @@ class BaseModel(db.Model):
                 "help": "The field should be an attribute of the object."
             }
         if isinstance(current_values, InstrumentedList):
-            if isinstance(values, list) is False:
+            if not isinstance(values, list):
                 return {
                     "message": "Ensure objects passed are as a list.",
                     "help": "This eases updating of (one)many-to-many fields"
@@ -79,26 +79,25 @@ class BaseModel(db.Model):
                     "help": "Has all fields and doesn't repeat unique values.",
                     "exception": e
                 }
-        else:
-            try:
-                setattr(self, field, values)
-            except Exception as e:
-                return {
-                    "message": "Ensure the values you're inserting are valid.",
-                    "help": "The objects should relate to the inserted field.",
-                    "exception": e
-                }
-            try:
-                db.session.add(self)
-                db.session.commit()
-                return True
-            except Exception as e:
-                db.session.rollback()
-                return {
-                    "message": "Ensure the object you're saving is valid",
-                    "help": "Has all fields and doesn't repeat unique values.",
-                    "exception": e
-                }
+        try:
+            setattr(self, field, values)
+        except Exception as e:
+            return {
+                "message": "Ensure the values you're inserting are valid.",
+                "help": "The objects should relate to the inserted field.",
+                "exception": e
+            }
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            return {
+                "message": "Ensure the object you're saving is valid",
+                "help": "Has all fields and doesn't repeat unique values.",
+                "exception": e
+            }
 
     def remove(self, field, **kwargs):
         """
@@ -199,19 +198,14 @@ class BaseModel(db.Model):
         """
         Check whether an object exists in the database.
         """
-        result = cls.query.filter_by(**kwargs).first()
-        if not result:
-            return False
-        else:
-            return True
+        return bool(cls.query.filter_by(**kwargs).first())
 
     @classmethod
     def drop(cls):
         """
         Delete all objects of a table.
         """
-        objects = cls.get_all()
-        for i in objects:
+        for i in cls.get_all():
             i.delete()
         return True
 
@@ -226,8 +220,7 @@ class BaseModel(db.Model):
                 "message": "The object does not exist",
                 "help": "Ensure arguments are of existent objects and unique."
             }
-        else:
-            return result
+        return result
 
     @classmethod
     def get_all(cls):
@@ -240,8 +233,7 @@ class BaseModel(db.Model):
                 "message": "The class of objects do not exist",
                 "help": "Ensure the class required has objects."
             }
-        else:
-            return result
+        return result
 
     @classmethod
     def search(cls, **kwargs):
@@ -251,20 +243,18 @@ class BaseModel(db.Model):
         """
         key = [key for key in kwargs][0]
         objects = cls.get_all()
-        if isinstance(objects, dict) is True:
+        if isinstance(objects, dict):
             return objects
-        else:
-            results = []
+        results = []
         for i in objects:
-            if is_substring(kwargs[key], getattr(i, key)) is True:
+            if is_substring(kwargs[key], getattr(i, key)):
                 results.append(i)
         if not results:
             return {
                 "message": "No objects match the searched value.",
                 "help": "Ensure arguments are of existent objects."
             }
-        else:
-            return results
+        return results
 
 
 user_conversations = db.Table(
@@ -347,36 +337,22 @@ class User(BaseModel):
                              uselist=False,
                              cascade="all,delete")
 
-    @classmethod
-    def view_public(cls, user_id):
+    def view_public(self):
         """
         Public view of a user's profile.
         """
-        user = cls.get(id=user_id)
-        if isinstance(user, dict) is True:
-            return {
-                "message": "The user does not exist",
-                "help": "Ensure the id is of an existent user and unique."
-            }
-        user = cls.serialize(user)
+        user = self.serialize()
         del user['password']
         return user
 
-    @classmethod
-    def view_private(cls, user_id):
+    def view_private(self):
         """
         Private view of a user's profile.
         """
-        user = cls.get(id=user_id)
-        if isinstance(user, dict) is True:
-            return {
-                "message": "The user does not exist",
-                "help": "Ensure the id is of an existent user and unique."
-            }
-        roles = [role.serialize() for role in user.roles]
-        wallet = user.wallet.serialize()
-        boards = [board.serialize() for board in user.boards]
-        conversations = user.conversations
+        roles = [role.serialize() for role in self.roles]
+        wallet = self.wallet.serialize()
+        boards = [board.serialize() for board in self.boards]
+        conversations = self.conversations
         messages = [conversation.messages for conversation in conversations]
         conversations = [conversation.serialize()
                          for conversation in conversations]
@@ -389,7 +365,7 @@ class User(BaseModel):
                             conversations.index(conversation)]]
                 }
             )
-        user = cls.serialize(user)
+        user = self.serialize()
         user.update({'roles': roles, 'wallet': wallet,
                      'conversations': conversations, 'boards': boards})
         del user['password']
@@ -418,7 +394,7 @@ class Board(BaseModel):
 
     def view(self):
         board = self.serialize()
-        board.update({'members': [i.view_public(i.id) for i in self.members]})
+        board.update({'members': [i.view_public() for i in self.members]})
         board.update({'estates_owned': [i.__repr__()
                                         for i in self.estates_owned]})
         board.update({'units_owned': [i.__repr__() for i in self.units_owned]})
@@ -578,7 +554,7 @@ class Conversation(BaseModel):
 
     def view(self):
         conversation = self.serialize()
-        conversation.update({'participants': [i.view_public(i.id)
+        conversation.update({'participants': [i.view_public()
                                               for i in self.participants]})
         conversation.update(
             {'messages': sorted(
@@ -602,6 +578,9 @@ class Message(BaseModel):
     conversation_id = db.Column(db.Integer(),
                                 db.ForeignKey('conversation.id'),
                                 nullable=True)
+
+    def view(self):
+        return self.serialize()
 
 
 class Role(BaseModel):

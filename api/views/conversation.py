@@ -6,9 +6,9 @@ from flask import request
 from flask_restful import Resource
 
 
-from api.helpers.auth import view_token
+from api.helpers.auth import token_required, view_token
 from api.helpers.validation import validate_json
-from api.models import Conversation, Message, User
+from api.models import Conversation, User
 
 
 class ConversationResource(Resource):
@@ -16,6 +16,7 @@ class ConversationResource(Resource):
     Conversation view functions
     """
 
+    @token_required
     def post(self):
         """
         Create a conversation.
@@ -52,35 +53,39 @@ class ConversationResource(Resource):
                 }
             }, 201
 
-
-class MessageResource(Resource):
-    """
-    Message view functions.
-    """
-
-    def post(self, conversation_id):
+    @token_required
+    def get(self, conversation_id=None):
         """
-        Send a message into a conversation.
+        Get a user's conversation(s).
         """
-        payload = request.get_json()
-        required = ['content']
-        result = validate_json(required, payload, empty=True)
-        if isinstance(result, bool) is False:
+        user = User.get(email=view_token(
+            request.headers.get('Authorization'))['email'])
+        conversations = user.conversations
+        if conversation_id:
+            conversation = [conversation for conversation in conversations
+                            if conversation.id == conversation_id]
+            if conversation:
+                return {
+                    'status': 'success',
+                    'data': {
+                        'conversation': conversation[0].view()
+                    }
+                }, 200
             return {
                 'status': 'fail',
-                'message': 'Content required for a message.'
-            }, 400
-        else:
-            current_user_id = current_user_id = view_token(
-                request.headers.get('Authorization'))['id']
-            message = Message(
-                sender=current_user_id,
-                content=payload['content'])
-            conversation = Conversation.get(id=conversation_id)
-            conversation.insert('messages', [message])
+                'message': 'The conversation does not exist.',
+                'help': 'Ensure conversation_id is existent.'
+            }, 404
+        if conversations:
             return {
                 'status': 'success',
                 'data': {
-                    'updated_conversation': conversation.view()
+                    'conversations': [
+                        conversation.view() for conversation in conversations]
                 }
-            }, 201
+            }, 200
+        return {
+            'status': 'fail',
+            'message': 'The user has no conversations.',
+            'help': 'Open at least one conversation.'
+        }, 404

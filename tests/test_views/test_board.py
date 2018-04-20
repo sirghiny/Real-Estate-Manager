@@ -2,6 +2,7 @@
 
 from json import dumps, loads
 
+from api.models import Board, User
 from tests.base import BaseCase
 
 
@@ -103,4 +104,53 @@ class TestBoard(BaseCase):
         }
         actual = loads(response.data)
         self.assertEqual(404, response.status_code)
+        self.assertEqual(expected, actual)
+
+    def test_view_members_of_nonexistent_board(self):
+        response = self.client.get(
+            '/api/v1/boards/1/members/',
+            headers=self.headers)
+        expected = {
+            'status': 'fail',
+            'message': 'The board does not exist.',
+            'help': 'Ensure board_id is of an existent board.'
+        }
+        actual = loads(response.data)
+        self.assertEqual(404, response.status_code)
+        self.assertEqual(expected, actual)
+
+    def test_view_members_of_board_with_none(self):
+        self.board1.save()
+        response = self.client.get(
+            '/api/v1/boards/1/members/',
+            headers=self.headers)
+        expected = {
+            'status': 'fail',
+            'message': 'The board has no members.',
+            'help': 'Add a user to the board if necessary.'}
+        actual = loads(response.data)
+        self.assertEqual(404, response.status_code)
+        self.assertEqual(expected, actual)
+
+    def test_view_members_of_board(self):
+        self.board1.save()
+        self.user1.save()
+        self.user2.save()
+        board1 = Board.get(id=1)
+        board1.insert('members', User.get_all())
+        response = self.client.get(
+            '/api/v1/boards/1/members/',
+            headers=self.headers)
+        expected = {
+            'status': 'success',
+            'data': {
+                'members': [
+                    {'id': 1, 'email': 'first1.last1@email.com',
+                     'name': 'First1 Middle1 Last1',
+                     'phone_number': '000 12 3456781'},
+                    {'id': 2, 'email': 'first2.last2@email.com',
+                     'name': 'First2 Middle2 Last2',
+                     'phone_number': '000 12 3456782'}]}}
+        actual = loads(response.data)
+        self.assertEqual(200, response.status_code)
         self.assertEqual(expected, actual)

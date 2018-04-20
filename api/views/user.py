@@ -43,9 +43,8 @@ class UserResource(Resource):
             }, 201
         return {
             'status': 'fail',
-            'data': {
-                'missing': result
-            }
+            'message': 'Not all fields were provided.',
+            'missing': result
         }, 400
 
     @token_required
@@ -54,34 +53,36 @@ class UserResource(Resource):
         View a user's information.
         """
         if user_id:
-            user = User.view_public(user_id=user_id)
-            if 'id' in user:
+            user = User.get(id=user_id)
+            if isinstance(user, dict) is False:
                 return {
                     'status': 'success',
-                    'data': user
+                    'data': user.view_public()
                 }, 200
-            return {
-                'status': 'fail',
-                'message': 'The user does not exist.',
-                'help': 'Ensure arguments are of existent objects and unique.'
-            }, 404
-        elif request.args.get('name'):
-            name = request.args.get('name')
+            else:
+                return {
+                    'status': 'fail',
+                    'message': 'The user does not exist.',
+                    'help': 'Ensure arguments are of existent object.'
+                }, 404
+        elif request.args.get('q'):
+            name = request.args.get('q')
             users = User.search(name=name)
             if isinstance(users, dict) is False:
                 return {
                     'status': 'success',
                     'data': {
-                        'users': [User.view_public(user.id) for user in users]
+                        'users': [user.view_public() for user in users]
                     }
                 }, 200
-            return {
-                'status': 'fail',
-                'message': 'No users with the name in the database.'
-            }, 404
+            else:
+                return {
+                    'status': 'fail',
+                    'message': 'No users with the name in the database.'
+                }, 404
         users = User.get_all()
         if isinstance(users, dict) is False:
-            users = [User.view_public(user_id=user.id) for user in users]
+            users = [user.view_public() for user in users]
             return {
                 'status': 'success',
                 'data': {
@@ -94,30 +95,38 @@ class UserResource(Resource):
         }, 404
 
 
-class UserWalletResource(Resource):
+class UserBoardsResource(Resource):
     """
-    View functions for user's wallet.
+    View functions for a user's boards.
     """
 
+    @token_required
     def get(self, user_id):
         """
-        View a user's wallet.
+        View a user's boards.
         """
         user = User.get(id=user_id)
         if isinstance(user, dict):
             return {
                 'status': 'fail',
                 'message': 'The user does not exist.',
-                'help': 'Ensure arguments are of existent objects and unique.'
+                'help': 'Ensure arguments are of existent object.'
             }, 404
         else:
-            wallet = user.wallet.view()
-            return {
-                'status': 'success',
-                'data': {
-                    'wallet': wallet
-                }
-            }, 200
+            boards = user.boards
+            if not boards:
+                return {
+                    'status': 'fail',
+                    'message': 'The user is not in any boards.',
+                    'help': 'Suggest a board if necessary.'
+                }, 404
+            else:
+                return {
+                    'status': 'success',
+                    'data': {
+                        'boards': [board.view() for board in boards]
+                    }
+                }, 200
 
 
 class UserRolesResource(Resource):
@@ -125,6 +134,7 @@ class UserRolesResource(Resource):
     View functions for user's roles.
     """
 
+    @token_required
     def get(self, user_id):
         """
         View a user's roles.
@@ -142,5 +152,32 @@ class UserRolesResource(Resource):
                 'status': 'success',
                 'data': {
                     'roles': roles
+                }
+            }, 200
+
+
+class UserWalletResource(Resource):
+    """
+    View functions for user's wallet.
+    """
+
+    @token_required
+    def get(self, user_id):
+        """
+        View a user's wallet.
+        """
+        user = User.get(id=user_id)
+        if isinstance(user, dict):
+            return {
+                'status': 'fail',
+                'message': 'The user does not exist.',
+                'help': 'Ensure arguments are of existent objects and unique.'
+            }, 404
+        else:
+            wallet = user.wallet.view()
+            return {
+                'status': 'success',
+                'data': {
+                    'wallet': wallet
                 }
             }, 200

@@ -70,17 +70,19 @@ class TestUser(BaseCase):
             'email': 'first1.last1@email.com',
             'name': 'First1 Middle1 Last1',
             'phone_number': '000 12 3456781'}
-        actual = User.view_public(1)
+        actual = User.get(id=1).view_public()
         self.assertDictEqual(excepted, actual)
 
     def test_view_private_user(self):
-        self.assertTrue(isinstance(User.view_private(1), dict))
-        self.user1.insert('wallet', self.wallet1)
-        self.user1.insert('conversations', [self.conversation1])
+        self.assertTrue(isinstance(User.get(id=1), dict))
         self.user1.save()
+        user1 = User.get(id=1)
+        user1.insert('wallet', self.wallet1)
+        user1.insert('conversations', [self.conversation1])
+        user1.save()
         excepted = sorted(['id', 'email', 'name', 'phone_number',
                            'roles', 'wallet', 'conversations', 'boards'])
-        actual = sorted(list(User.view_private(1).keys()))
+        actual = sorted(list(user1.view_private().keys()))
         self.assertEqual(excepted, actual)
 
     def test_insert_wrong_field(self):

@@ -53,11 +53,11 @@ def create_test_token():
     Create token for use in testing.
     Seed roles before running this.
     """
-    user = User.get(email="test.user@rem.com")
+    user = User.get(email="first1.last1@email.com")
     roles = Role.get_all()
     user.insert('roles', roles)
     user.save()
-    token = create_token("test.user@rem.com")
+    token = create_token("first1.last1@email.com")
     environ['TEST_TOKEN'] = token
     print('\nToken created:\n', token,
           '\nThe token is saved in the environment.\n')
@@ -108,10 +108,10 @@ def seed_test_data():
     board2.insert('estates_owned', [estate3])
     board1.insert('units_owned', [unit5])
     user0 = User(
-        name="Test User",
-        phone_number="000 00 0000000",
-        email="test.user@rem.com",
-        password=digest('ABC123!@#1'))
+        name="First1 Middle1 Last1",
+        phone_number="000 12 3456781",
+        email="first1.last1@email.com",
+        password=digest('ABC123!@#'))
     user1 = User(
         name="Jaime Lannister",
         phone_number="000 12 3456781",

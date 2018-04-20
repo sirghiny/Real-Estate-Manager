@@ -3,6 +3,7 @@
 from json import dumps, loads
 from os import getenv
 
+from api.models import Conversation, User
 from tests.base import BaseCase
 
 
@@ -58,3 +59,64 @@ class TestConversation(BaseCase):
         actual = loads(response.data)
         self.assertEqual(404, response.status_code)
         self.assertEqual(expected, actual)
+
+    def test_get_conversation_when_none_exist(self):
+        self.user1.save()
+        response = self.client.get(
+            '/api/v1/conversations/1',
+            headers=self.headers)
+        expected = {
+            'status': 'fail',
+            'message': 'The conversation does not exist.',
+            'help': 'Ensure conversation_id is existent.'
+        }
+        actual = loads(response.data)
+        self.assertEqual(404, response.status_code)
+        self.assertDictEqual(expected, actual)
+
+    def test_get_conversations_when_none_exist(self):
+        self.user1.save()
+        response = self.client.get(
+            '/api/v1/conversations/',
+            headers=self.headers)
+        expected = {
+            'status': 'fail', 'message': 'The user has no conversations.',
+            'help': 'Open at least one conversation.'}
+        actual = loads(response.data)
+        self.assertEqual(404, response.status_code)
+        self.assertDictEqual(expected, actual)
+
+    def test_get_conversation(self):
+        self.user1.save()
+        self.conversation1.save()
+        user1 = User.get(id=1)
+        user1.insert('conversations', [Conversation.get(id=1)])
+        response = self.client.get(
+            '/api/v1/conversations/1',
+            headers=self.headers)
+        expected = sorted(['id', 'timestamp', 'board_id',
+                           'participants', 'messages'])
+        actual = sorted([i for i in loads(response.data)
+                         ['data']['conversation']])
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, actual)
+
+    def test_get_conversations(self):
+        self.user1.save()
+        self.conversation1.save()
+        self.conversation2.save()
+        user1 = User.get(id=1)
+        user1.insert('conversations', [
+                     Conversation.get(id=1), Conversation.get(id=2)])
+        response = self.client.get(
+            '/api/v1/conversations/',
+            headers=self.headers)
+        expected = sorted(['id', 'timestamp', 'board_id',
+                           'participants', 'messages'])
+        actual1 = sorted([i for i in loads(response.data)
+                          ['data']['conversations'][0]])
+        actual2 = sorted([i for i in loads(response.data)
+                          ['data']['conversations'][1]])
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, actual1)
+        self.assertEqual(expected, actual2)

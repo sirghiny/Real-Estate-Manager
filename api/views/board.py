@@ -81,3 +81,38 @@ class BoardResource(Resource):
                     'board': board.view()
                 }
             }, 201
+
+
+class BoardMembersResource(Resource):
+    """
+    View functions for board members.
+    """
+
+    def get(self, board_id):
+        """
+        View members of a board.
+        """
+        board = Board.get(id=board_id)
+        if isinstance(board, dict):
+            return {
+                'status': 'fail',
+                'message': 'The board does not exist.',
+                'help': 'Ensure board_id is of an existent board.'
+            }, 404
+
+        else:
+            members = board.members
+            if not members:
+                return {
+                    'status': 'fail',
+                    'message': 'The board has no members.',
+                    'help': 'Add a user to the board if necessary.'
+                }, 404
+            else:
+                return{
+                    'status': 'success',
+                    'data': {
+                        'members': [user.view_public() for user in board.members]
+
+                    }
+                }, 200
