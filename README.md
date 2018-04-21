@@ -1,5 +1,7 @@
 # Real Estate Manager
 
+[![Build Status](https://travis-ci.org/sirghiny/real_estate_manager.svg?branch=develop)](https://travis-ci.org/sirghiny/real_estate_manager)
+
 [![Coverage Status](https://coveralls.io/repos/github/sirghiny/real_estate_manager/badge.svg?branch=create-more-views)](https://coveralls.io/github/sirghiny/real_estate_manager?branch=create-more-views)
 
 ***
