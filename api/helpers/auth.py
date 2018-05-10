@@ -44,9 +44,9 @@ def create_token(email):
     data = {field: user[field] for field in token_fields}
     data.update({'roles': user_roles})
     created = time()
-    expires = created + timedelta(days=1000).total_seconds()
-    data.update({'created': created, 'expires': expires})
+    expires = created + timedelta(days=7).total_seconds()
     data = {'data': encrypt(data)}
+    data.update({'expires': expires})
     return encode(data, getenv('JWT_KEY'), algorithm='HS256').decode('utf-8')
 
 
@@ -79,21 +79,26 @@ def token_required(f):
                 "message": "Header does not contain authorization token."
             }, 400
         try:
-            decode(
+            decoded_token = decode(
                 token,
                 getenv('JWT_KEY'),
                 algorithms=['HS256'],
                 options={
-                    'verify_signature': True,
-                    'verify_exp': True
+                    'verify_signature': True
                 }
             )
-            return f(*args, **kwargs)
+            if decoded_token['expires'] < time():
+                return {
+                    "status": "fail",
+                    "error": "Bad request",
+                    "message": "Expired token."
+                }, 400
+            else:
+                return f(*args, **kwargs)
         except Exception as e:
             return {
                 "status": "fail",
                 "error": "Bad request",
-                "message": "There's a problem with the token.",
-                "exception": e
+                "message": str(e)
             }, 400
     return decorated

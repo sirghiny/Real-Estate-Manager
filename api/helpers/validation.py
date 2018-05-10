@@ -20,11 +20,13 @@ def validate_json(keys, json_like_object, empty=False):
                     else:
                         missing += key + ', '
             else:
-                if not value:
+                if value is None:
                     if empty is True:
                         pass
                     else:
                         missing += key + ', '
+                else:
+                    pass
         except KeyError:
             missing += key + ', '
     if missing:

@@ -1,7 +1,6 @@
 # pylint:disable=missing-docstring, invalid-name
 
 from json import dumps, loads
-from os import getenv
 
 from api.models import Board, Role, User, Wallet
 from tests.base import BaseCase
@@ -50,6 +49,25 @@ class TestUser(BaseCase):
         self.assertDictEqual(expected, loads(response.data))
         self.assertEqual(200, response.status_code)
 
+    def test_get_user_bad_token(self):
+        self.user1.save()
+        response1 = self.client.get(
+            '/api/v1/users/1', headers=self.bad_headers1)
+        response2 = self.client.get(
+            '/api/v1/users/1', headers=self.bad_headers2)
+        expected1 = {
+            'status': 'fail',
+            'error': 'Bad request',
+            'message': 'Signature verification failed'}
+        expected2 = {
+            'status': 'fail',
+            'error': 'Bad request',
+            'message': 'Expired token.'}
+        actual1 = loads(response1.data)
+        actual2 = loads(response2.data)
+        self.assertEqual(expected1, actual1)
+        self.assertEqual(expected2, actual2)
+
     def test_get_users_no_authorization(self):
         response = self.client.get(
             '/api/v1/users/')
@@ -65,7 +83,7 @@ class TestUser(BaseCase):
         self.user1.save()
         self.user2.save()
         response = self.client.get(
-            '/api/v1/users/', headers=self.headers)
+            '/api/v1/users/all/', headers=self.headers)
         expected = {
             'status': 'success',
             'data': {
@@ -83,11 +101,11 @@ class TestUser(BaseCase):
 
     def test_get_users_when_none_is_in_database(self):
         response = self.client.get(
-            '/api/v1/users/', headers=self.headers)
+            '/api/v1/users/all/', headers=self.headers)
         expected = {
             'status': 'fail',
-            'message': 'No users in the database.'
-        }
+            'message': 'There are no users in the database.',
+            'help': 'Ensure there are some users in the database'}
         self.assertDictEqual(expected, loads(response.data))
         self.assertEqual(404, response.status_code)
 
@@ -145,7 +163,8 @@ class TestUser(BaseCase):
             '/api/v1/users/?q=Random', headers=self.headers)
         expected = {
             'status': 'fail',
-            'message': 'No users with the name in the database.'}
+            'message': 'No users with the name in the database.',
+            'help': 'Try searching with another name.'}
         self.assertDictEqual(expected, loads(response.data))
         self.assertEqual(404, response.status_code)
 
@@ -204,8 +223,7 @@ class TestUser(BaseCase):
         expected = {
             'status': 'fail',
             'message': 'The user does not exist.',
-            'help': 'Ensure arguments are of existent objects and unique.'
-        }
+            'help': 'Ensure arguments are of existent object.'}
         actual = loads(response.data)
         self.assertEqual(404, response.status_code)
         self.assertDictEqual(expected, actual)
@@ -229,13 +247,12 @@ class TestUser(BaseCase):
 
     def test_view_wallet_nonexistent_user(self):
         response = self.client.get(
-            '/api/v1/users/1/wallet/',
+            '/api/v1/users/wallet/',
             headers=self.headers)
         expected = {
             'status': 'fail',
             'message': 'The user does not exist.',
-            'help': 'Ensure arguments are of existent objects and unique.'
-        }
+            'help': 'Ensure arguments are of existent object.'}
         actual = loads(response.data)
         self.assertEqual(404, response.status_code)
         self.assertDictEqual(expected, actual)
@@ -246,7 +263,7 @@ class TestUser(BaseCase):
         user1 = User.get(id=1)
         user1.insert('wallet', Wallet.get(id=1))
         response = self.client.get(
-            '/api/v1/users/1/wallet/',
+            '/api/v1/users/wallet/',
             headers=self.headers)
         expected = {
             'status': 'success',
@@ -256,3 +273,79 @@ class TestUser(BaseCase):
         actual = loads(response.data)
         self.assertEqual(200, response.status_code)
         self.assertDictEqual(expected, actual)
+
+    def test_update_user(self):
+        self.user1.save()
+        response = self.client.patch('/api/v1/users/',
+                                     content_type='application/json',
+                                     data=dumps(
+                                         {'new_data': {'name': 'New Name'}}),
+                                     headers=self.headers)
+        self.assertEqual('New Name',
+                         (loads(response.data))['data']['user']['name'])
+
+    def test_update_user_wrong_attribute(self):
+        self.user1.save()
+        response = self.client.patch('/api/v1/users/',
+                                     content_type='application/json',
+                                     data=dumps(
+                                         {'new_data': {'random': 'Random'}}),
+                                     headers=self.headers)
+        self.assertEqual(400, response.status_code)
+        expected = {
+            'message': 'Error encountered when setting attributes.',
+            'help': "Ensure all fields you're updating are valid."}
+        actual = loads(response.data)
+        self.assertEqual(expected, actual)
+
+    def test_update_user_no_data(self):
+        self.user1.save()
+        response = self.client.patch('/api/v1/users/',
+                                     content_type='application/json',
+                                     data=dumps(
+                                         {}),
+                                     headers=self.headers)
+        self.assertEqual(400, response.status_code)
+        expected = {
+            'status': 'fail',
+            'message': 'Not all fields were provided.',
+            'missing': 'new_data'
+        }
+        actual = loads(response.data)
+        self.assertEqual(expected, actual)
+
+    def test_update_user_nonexistent(self):
+        response = self.client.patch('/api/v1/users/',
+                                     content_type='application/json',
+                                     data=dumps(
+                                         {'new_data': {'name': 'New Name'}}),
+                                     headers=self.headers)
+        expected = {
+            'status': 'fail',
+            'message': 'The user does not exist.',
+            'help': 'Ensure arguments are of existent object.'}
+        actual = loads(response.data)
+        self.assertDictEqual(expected, actual)
+
+    def test_delete_user_nonexistent(self):
+        response = self.client.delete('/api/v1/users/',
+                                      headers=self.headers)
+        self.assertEqual(404, response.status_code)
+        expected = {
+            'status': 'fail',
+            'message': 'The user does not exist.',
+            'help': 'Ensure arguments are of existent object.'}
+        actual = loads(response.data)
+        self.assertDictEqual(expected, actual)
+
+    def test_delete_user(self):
+        self.user1.save()
+        response = self.client.delete('/api/v1/users/',
+                                      headers=self.headers)
+        self.assertEqual(200, response.status_code)
+        expected = {
+            'status': 'success',
+            'message': 'User with id 1 has been deleted.'}
+        actual = loads(response.data)
+        self.assertDictEqual(expected, actual)
+        self.assertTrue(isinstance(User.get_all(), dict))

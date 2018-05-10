@@ -4,7 +4,9 @@ from flask_restful import Resource
 
 from api.helpers.auth import view_token
 from api.helpers.validation import validate_json
-from api.models import Conversation, Message, User
+from api.helpers.modelops import (
+    get_conversations, get_messages, update_resource)
+from api.models import Conversation, Message
 
 
 class MessageResource(Resource):
@@ -25,58 +27,81 @@ class MessageResource(Resource):
                 'message': 'Content required for a message.'
             }, 400
         else:
-            current_user_id = current_user_id = view_token(
-                request.headers.get('Authorization'))['id']
-            message = Message(
-                sender=current_user_id,
-                content=payload['content'])
-            conversation = Conversation.get(id=conversation_id)
-            conversation.insert('messages', [message])
-            return {
-                'status': 'success',
-                'data': {
-                    'updated_conversation': conversation.view()
-                }
-            }, 201
+            result = get_conversations(request, conversation_id)
+            if isinstance(result, dict):
+                return result, 404
+            else:
+                current_user_id = view_token(
+                    request.headers.get('Authorization'))['id']
+                message = Message(
+                    sender=current_user_id,
+                    content=payload['content'])
+                result.insert('messages', [message])
+                return {
+                    'status': 'success',
+                    'data': {
+                        'updated_conversation': result.view()
+                    }
+                }, 201
 
     def get(self, conversation_id, message_id=None):
         """
         View message(s).
         """
-        user = User.get(email=view_token(
-            request.headers.get('Authorization'))['email'])
-        conversations = user.conversations
-        try:
-            conversation = [conversation for conversation in conversations
-                            if conversation.id == conversation_id][0]
-            if message_id:
-                try:
-                    message = [
-                        message for message in conversation.messages][0]
-                    return {
-                        'status': 'success',
-                        'data': {
-                            'message': message.view()
-                        }
-                    }, 200
-                except IndexError:
-                    return {
-                        'status': 'fail',
-                        'message': 'The message does not exist.',
-                        'help': 'Ensure message_id is existent.'
-                    }, 404
-            else:
+        result = get_messages(request, conversation_id, message_id)
+        if isinstance(result, dict):
+            return result, 404
+        elif isinstance(result, list):
+            return {
+                'status': 'success',
+                'data': {
+                    'messages': [
+                        message.view() for message in result
+                    ]
+                }
+            }, 200
+        else:
+            return {
+                'status': 'success',
+                'data': {
+                    'message': result.view()
+                }
+            }, 200
+
+    def delete(self, conversation_id, message_id):
+        """
+        Delete message.
+        """
+        result = get_messages(request, conversation_id, message_id)
+        if isinstance(result, dict):
+            return result, 404
+        else:
+            result.delete()
+            updated_conversation = Conversation.get(id=conversation_id).view()
+            return {
+                'status': 'success',
+                'data': {
+                    'updated_conversation': updated_conversation
+                }
+            }, 200
+
+    def patch(self, conversation_id, message_id):
+        """
+        Edit a message.
+        """
+        result = get_messages(request, conversation_id, message_id)
+        if isinstance(result, dict):
+            return result, 404
+        else:
+            update_result = update_resource(request, result)
+            if isinstance(update_result, bool):
+                updated_conversation = Conversation.get(
+                    id=conversation_id).view()
                 return {
                     'status': 'success',
                     'data': {
-                        'messages': [
-                            message.view() for message in conversation.messages
-                        ]
+                        'updated_conversation': updated_conversation
                     }
                 }, 200
-        except IndexError:
-            return {
-                'status': 'fail',
-                'message': 'The conversation does not exist.',
-                'help': 'Ensure conversation_id is existent.'
-            }, 404
+            else:
+                return update_result, 400

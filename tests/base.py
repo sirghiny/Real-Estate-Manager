@@ -22,12 +22,13 @@ class BaseCase(TestCase):
         """
         self.app = create_app('testing')
         self.client = self.app.test_client()
-        self.client.headers = {'Authorization': getenv('TEST_TOKEN')}
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.drop_all()
         db.create_all()
 
+        self.bad_headers1 = {'Authorization': getenv('BAD_TOKEN')}
+        self.bad_headers2 = {'Authorization': getenv('EXPIRED_TOKEN')}
         self.board1 = Board()
         self.board2 = Board()
         self.conversation1 = Conversation()
@@ -64,15 +65,19 @@ class BaseCase(TestCase):
             password=digest('ABC123!@#')
         )
         self.user3 = User()
-        self.user_new_data1 = {
-            'phone_number': "000 12 3456783"}
-        self.user_new_data2 = {
-            'bad_field': "random"}
         self.wallet1 = Wallet()
         self.wallet2 = Wallet()
+
+        # extras
         self.board3_dict = {'members': [1, 2]}
         self.conversation3_dict = {
             "participants": [1, 2]}
+        self.conversation4_dict = {
+            "participants": [2]}
+        self.estate4_dict = {
+            "address": "Random Address 3",
+            "board_id": 1
+        }
         self.message4_dict = {
             "content": "New Message."}
         self.user1_dict = {
@@ -80,6 +85,10 @@ class BaseCase(TestCase):
             "phone_number": "000 12 3456781",
             "email": "first1.last1@email.com",
             "password": "ABC123!@#"}
+        self.user_new_data1 = {
+            'phone_number': "000 12 3456783"}
+        self.user_new_data2 = {
+            'bad_field': "random"}
 
     def tearDown(self):
         """
@@ -88,4 +97,3 @@ class BaseCase(TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
-        # Check remote

@@ -26,7 +26,7 @@ def init():
     Delete current migrations.
     Recreate migrations.
     """
-    system('rm -Rf migrations')
+    system('rm -rf migrations')
     system('python manage.py db init')
     system('python manage.py db migrate')
     system('python manage.py db upgrade')
@@ -38,7 +38,6 @@ def seed_roles():
     """
     Add initial roles to the database.
     """
-
     Role.drop()
     roles = ['basic', 'admin', 'super_admin']
     for role in roles:

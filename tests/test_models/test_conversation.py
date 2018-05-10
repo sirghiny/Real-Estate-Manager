@@ -1,7 +1,7 @@
 # pylint:disable=missing-docstring, invalid-name
 
-from     api.models import Conversation, Message
-from     tests.base import BaseCase
+from api.models import Conversation, Message
+from tests.base import BaseCase
 
 
 class TestConversation(BaseCase):
@@ -29,6 +29,13 @@ class TestConversation(BaseCase):
         self.assertFalse(Conversation.check_exists(id=1))
         self.conversation1.save()
         self.assertTrue(Conversation.check_exists(id=1))
+
+    def test_repr_conversation(self):
+        self.conversation1.save()
+        conversation1 = Conversation.get(id=1)
+        expected = ['title', 'last_message']
+        actual = list(conversation1.__repr__().keys())
+        self.assertEqual(expected, actual)
 
     def test_add_and_remove_message_from_conversation(self):
         self.conversation1.save()

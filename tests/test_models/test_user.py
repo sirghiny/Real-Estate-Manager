@@ -31,6 +31,12 @@ class TestUser(BaseCase):
         self.assertEqual(True, User.get(id=1).delete())
         self.assertTrue(isinstance(User.get(id=1), dict))
 
+    def test_drop_user_table(self):
+        self.assertTrue(User.drop())
+        self.user1.save()
+        self.user2.save()
+        self.assertTrue(User.drop())
+
     def test_search_user_when_none_exist(self):
         self.assertTrue(isinstance(User.search(name='random'), dict))
 
@@ -63,17 +69,17 @@ class TestUser(BaseCase):
         actual = sorted([key for key in User.get(id=1).serialize()])
         self.assertEqual(excepted, actual)
 
-    def test_view_public_user(self):
+    def test_repr_user(self):
         self.user1.save()
         excepted = {
             'id': 1,
             'email': 'first1.last1@email.com',
             'name': 'First1 Middle1 Last1',
             'phone_number': '000 12 3456781'}
-        actual = User.get(id=1).view_public()
+        actual = User.get(id=1).__repr__()
         self.assertDictEqual(excepted, actual)
 
-    def test_view_private_user(self):
+    def test_view_user(self):
         self.assertTrue(isinstance(User.get(id=1), dict))
         self.user1.save()
         user1 = User.get(id=1)
@@ -82,7 +88,7 @@ class TestUser(BaseCase):
         user1.save()
         excepted = sorted(['id', 'email', 'name', 'phone_number',
                            'roles', 'wallet', 'conversations', 'boards'])
-        actual = sorted(list(user1.view_private().keys()))
+        actual = sorted(list(user1.view().keys()))
         self.assertEqual(excepted, actual)
 
     def test_insert_wrong_field(self):

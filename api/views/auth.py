@@ -3,8 +3,6 @@ Authorization functionality.
 Allows log in of a user.
 """
 
-from datetime import timedelta
-
 from flask import request
 from flask_restful import Resource
 

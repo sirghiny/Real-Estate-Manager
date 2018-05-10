@@ -35,7 +35,7 @@ class BaseModel(db.Model):
             return {
                 "message": "Database encountered an error upon deletion.",
                 "help": "Ensure the database is running properly.",
-                "exception": e
+                "exception": str(e)
             }
 
     def insert(self, field, values):
@@ -66,7 +66,7 @@ class BaseModel(db.Model):
                 return {
                     "message": "Ensure the values you're inserting are valid.",
                     "help": "The objects should relate to the inserted field.",
-                    "exception": e
+                    "exception": str(e)
                 }
             try:
                 db.session.add(self)
@@ -77,7 +77,7 @@ class BaseModel(db.Model):
                 return {
                     "message": "Ensure the object you're saving is valid",
                     "help": "Has all fields and doesn't repeat unique values.",
-                    "exception": e
+                    "exception": str(e)
                 }
         try:
             setattr(self, field, values)
@@ -85,7 +85,7 @@ class BaseModel(db.Model):
             return {
                 "message": "Ensure the values you're inserting are valid.",
                 "help": "The objects should relate to the inserted field.",
-                "exception": e
+                "exception": str(e)
             }
         try:
             db.session.add(self)
@@ -96,7 +96,7 @@ class BaseModel(db.Model):
             return {
                 "message": "Ensure the object you're saving is valid",
                 "help": "Has all fields and doesn't repeat unique values.",
-                "exception": e
+                "exception": str(e)
             }
 
     def remove(self, field, **kwargs):
@@ -125,7 +125,7 @@ class BaseModel(db.Model):
                     return {
                         "message": "Ensure the arguments passed are valid.",
                         "help": "Should be of an existent object and unique.",
-                        "exception": e
+                        "exception": str(e)
                     }
             else:
                 setattr(self, field, InstrumentedList([]))
@@ -140,7 +140,7 @@ class BaseModel(db.Model):
             return {
                 "message": "Ensure the object saved after deletion is valid",
                 "help": "Has all fields and doesn't repeat unique values.",
-                "exception": e
+                "exception": str(e)
             }
 
     def save(self):
@@ -156,7 +156,7 @@ class BaseModel(db.Model):
             return {
                 "message": "Ensure the object you're saving is valid",
                 "help": "Has all fields and doesn't repeat unique values.",
-                "exception": e
+                "exception": str(e)
             }
 
     def serialize(self):
@@ -190,7 +190,7 @@ class BaseModel(db.Model):
             return {
                 "message": "Database encountered error upon updating.",
                 "help": "Ensure the database is running properly.",
-                "exception": e
+                "exception": str(e)
             }
 
     @classmethod
@@ -205,9 +205,13 @@ class BaseModel(db.Model):
         """
         Delete all objects of a table.
         """
-        for i in cls.get_all():
-            i.delete()
-        return True
+        objects = cls.get_all()
+        if isinstance(objects, dict) is False:
+            for i in cls.get_all():
+                i.delete()
+            return True
+        else:
+            return True
 
     @classmethod
     def get(cls, **kwargs):
@@ -337,38 +341,29 @@ class User(BaseModel):
                              uselist=False,
                              cascade="all,delete")
 
-    def view_public(self):
+    def __repr__(self):
         """
-        Public view of a user's profile.
+        Summarized view of a user.
         """
         user = self.serialize()
         del user['password']
         return user
 
-    def view_private(self):
+    def view(self):
         """
-        Private view of a user's profile.
+        Detailed view of a user.
         """
-        roles = [role.serialize() for role in self.roles]
-        wallet = self.wallet.serialize()
         boards = [board.serialize() for board in self.boards]
-        conversations = self.conversations
-        messages = [conversation.messages for conversation in conversations]
-        conversations = [conversation.serialize()
-                         for conversation in conversations]
-        for conversation in conversations:
-            conversation.update(
-                {
-                    'messages': [
-                        message.serialize()
-                        for message in messages[
-                            conversations.index(conversation)]]
-                }
-            )
-        user = self.serialize()
+        conversations = [conversation.view()
+                         for conversation in self.conversations]
+        roles = [role.serialize() for role in self.roles]
+        try:
+            wallet = self.wallet.serialize()
+        except AttributeError:
+            wallet = None
+        user = self.__repr__()
         user.update({'roles': roles, 'wallet': wallet,
                      'conversations': conversations, 'boards': boards})
-        del user['password']
         return user
 
 
@@ -393,14 +388,20 @@ class Board(BaseModel):
                                    cascade="all,delete")
 
     def __repr__(self):
+        """
+        Summarized view of a board.
+        """
         return {
             'id': self.id,
-            'members': [i.view_public() for i in self.members]
+            'members': [i.__repr__() for i in self.members]
         }
 
     def view(self):
+        """
+        Detailed view of a board.
+        """
         board = self.serialize()
-        board.update({'members': [i.view_public() for i in self.members]})
+        board.update({'members': [i.__repr__() for i in self.members]})
         board.update({'estates_owned': [i.__repr__()
                                         for i in self.estates_owned]})
         board.update({'units_owned': [i.__repr__() for i in self.units_owned]})
@@ -428,9 +429,15 @@ class Estate(BaseModel):
                          nullable=True)
 
     def __repr__(self):
+        """
+        Summarized view of an estate.
+        """
         return {'id': self.id, 'address': self.address}
 
     def view(self):
+        """
+        Detailed view of an estate.
+        """
         estate = self.serialize()
         estate.update({'board': self.board.__repr__()})
         estate.update({'payment': self.payment.__repr__()})
@@ -461,14 +468,22 @@ class Unit(BaseModel):
                         nullable=True)
 
     def __repr__(self):
+        """
+        Summarized view of a unit.
+        """
         return {'id': self.id, 'name': self.name,
                 'estate': self.estate.__repr__()}
 
     def view(self):
+        """
+        Detailed view of a unit.
+        """
         unit = self.serialize()
+        unit.update({'board': self.board.__repr__()})
         unit.update({'estate': self.estate.__repr__()})
         unit.update({'payment': self.payment.__repr__()})
-        unit.update({'board': self.board.__repr__()})
+        unit.update({'resident': self.resident.__repr__()})
+        return unit
 
 
 class Wallet(BaseModel):
@@ -488,12 +503,18 @@ class Wallet(BaseModel):
                         nullable=True)
 
     def __repr__(self):
+        """
+        Summarized view of a wallet.
+        """
         return {
             'id': self.id,
             'balance': self.balance
         }
 
     def view(self):
+        """
+        Detailed view of a wallet.
+        """
         wallet = self.serialize()
         payments = [i.view() for i in self.payments]
         wallet.update({'payments': payments})
@@ -526,6 +547,9 @@ class Payment(BaseModel):
                           nullable=True)
 
     def __repr__(self):
+        """
+        Summarized view of a payment.
+        """
         return {
             'id': self.id,
             'required': self.required,
@@ -533,6 +557,9 @@ class Payment(BaseModel):
         }
 
     def view(self):
+        """
+        Detailed view of a payment.
+        """
         payment = self.serialize()
         deposits = [i.view() for i in self.deposits]
         payment.update({'deposits': deposits})
@@ -558,6 +585,9 @@ class Deposit(BaseModel):
                            nullable=True)
 
     def view(self):
+        """
+        Detailed view of a deposit.
+        """
         return self.serialize()
 
 
@@ -569,6 +599,8 @@ class Conversation(BaseModel):
                    primary_key=True)
     timestamp = db.Column(db.Float(),
                           default=time())
+    title = db.Column(db.String(),
+                      nullable=True)
     messages = db.relationship('Message',
                                backref='conversation',
                                lazy=True,
@@ -578,9 +610,25 @@ class Conversation(BaseModel):
                          db.ForeignKey('board.id'),
                          nullable=True)
 
+    def __repr__(self):
+        """
+        Summarized view of a conversation.
+        """
+        try:
+            last_message = self.messages[-1].view()
+        except IndexError:
+            last_message = None
+        return {
+            'title': self.title,
+            'last_message': last_message
+        }
+
     def view(self):
+        """
+        Detailed view of a conversation.
+        """
         conversation = self.serialize()
-        conversation.update({'participants': [i.view_public()
+        conversation.update({'participants': [i.__repr__()
                                               for i in self.participants]})
         conversation.update(
             {'messages': sorted(
@@ -597,6 +645,8 @@ class Message(BaseModel):
                    primary_key=True)
     content = db.Column(db.String(),
                         nullable=True)
+    edited = db.Column(db.Boolean(),
+                       default=False)
     sender = db.Column(db.Integer(),
                        nullable=False)
     timestamp = db.Column(db.Float(),
@@ -606,6 +656,9 @@ class Message(BaseModel):
                                 nullable=True)
 
     def view(self):
+        """
+        Detailed view of a message.
+        """
         return self.serialize()
 
 
@@ -618,5 +671,16 @@ class Role(BaseModel):
     title = db.Column(db.String(),
                       nullable=False)
 
-    def view(self):
+    def __repr__(self):
+        """
+        Summarized view of a role.
+        """
         return self.serialize()
+
+    def view(self):
+        """
+        Detailed view of a role.
+        """
+        role = self.serialize()
+        role.update({'users': [i.__repr__() for i in self.users]})
+        return role

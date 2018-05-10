@@ -5,8 +5,10 @@ User manipulation functionality.
 from flask import request
 from flask_restful import Resource
 
-from api.helpers.auth import token_required
+from api.helpers.auth import token_required, view_token
 from api.helpers.general import digest
+from api.helpers.modelops import (
+    get_user, get_users, search_users, update_resource)
 from api.helpers.validation import validate_json
 from api.models import Role, User, Wallet
 
@@ -52,47 +54,75 @@ class UserResource(Resource):
         """
         View a user's information.
         """
-        if user_id:
-            user = User.get(id=user_id)
-            if isinstance(user, dict) is False:
-                return {
-                    'status': 'success',
-                    'data': user.view_public()
-                }, 200
+        if request.args.get('q'):
+            name = request.args.get('q')
+            result = search_users(name)
+            if 'message' in result:
+                return result, 404
+            else:
+                return result, 200
+        else:
+            result = get_user(request, user_id)
+            if isinstance(result, dict):
+                return result, 404
             else:
                 return {
-                    'status': 'fail',
-                    'message': 'The user does not exist.',
-                    'help': 'Ensure arguments are of existent object.'
-                }, 404
-        elif request.args.get('q'):
-            name = request.args.get('q')
-            users = User.search(name=name)
-            if isinstance(users, dict) is False:
+                    'status': 'success',
+                    'data': result.__repr__()
+                }, 200
+
+    def patch(self):
+        """
+        Edit a user's information.
+        """
+        result = get_user(request)
+        if isinstance(result, dict):
+            return result, 404
+        else:
+            update_result = update_resource(request, result)
+            if isinstance(update_result, bool):
+                updated_user = User.get(id=view_token(
+                    request.headers.get('Authorization'))['id'])
                 return {
                     'status': 'success',
                     'data': {
-                        'users': [user.view_public() for user in users]
+                        'user': updated_user.view()
                     }
                 }, 200
             else:
-                return {
-                    'status': 'fail',
-                    'message': 'No users with the name in the database.'
-                }, 404
-        users = User.get_all()
-        if isinstance(users, dict) is False:
-            users = [user.view_public() for user in users]
+                return update_result, 400
+
+    def delete(self):
+        """
+        Delete a user.
+        """
+        result = get_user(request)
+        if isinstance(result, dict):
+            return result, 404
+        else:
+            user_id = view_token(
+                request.headers.get('Authorization'))['id']
+            result.delete()
             return {
                 'status': 'success',
-                'data': {
-                    'users': users
-                }
+                'message': 'User with id {} has been deleted.'.format(user_id)
             }, 200
-        return {
-            'status': 'fail',
-            'message': 'No users in the database.'
-        }, 404
+
+
+class UsersResource(Resource):
+    """
+    View functions for users in multiple numbers.
+    """
+
+    def get(self):
+        """
+        Get several users.
+        """
+        result = get_users()
+        if 'message' in result:
+            return result, 404
+        else:
+            return result, 200
 
 
 class UserBoardsResource(Resource):
@@ -105,15 +135,11 @@ class UserBoardsResource(Resource):
         """
         View a user's boards.
         """
-        user = User.get(id=user_id)
-        if isinstance(user, dict):
-            return {
-                'status': 'fail',
-                'message': 'The user does not exist.',
-                'help': 'Ensure arguments are of existent object.'
-            }, 404
+        result = get_user(request, user_id)
+        if isinstance(result, dict):
+            return result, 404
         else:
-            boards = user.boards
+            boards = result.boards
             if not boards:
                 return {
                     'status': 'fail',
@@ -139,19 +165,14 @@ class UserRolesResource(Resource):
         """
         View a user's roles.
         """
-        user = User.get(id=user_id)
-        if isinstance(user, dict):
-            return {
-                'status': 'fail',
-                'message': 'The user does not exist.',
-                'help': 'Ensure arguments are of existent objects and unique.'
-            }, 404
+        result = get_user(request, user_id)
+        if isinstance(result, dict):
+            return result, 404
         else:
-            roles = [role.view() for role in user.roles]
             return {
                 'status': 'success',
                 'data': {
-                    'roles': roles
+                    'roles': [role.__repr__() for role in result.roles]
                 }
             }, 200
 
@@ -162,19 +183,15 @@ class UserWalletResource(Resource):
     """
 
     @token_required
-    def get(self, user_id):
+    def get(self):
         """
         View a user's wallet.
         """
-        user = User.get(id=user_id)
-        if isinstance(user, dict):
-            return {
-                'status': 'fail',
-                'message': 'The user does not exist.',
-                'help': 'Ensure arguments are of existent objects and unique.'
-            }, 404
+        result = get_user(request)
+        if isinstance(result, dict):
+            return result, 404
         else:
-            wallet = user.wallet.view()
+            wallet = result.wallet.view()
             return {
                 'status': 'success',
                 'data': {

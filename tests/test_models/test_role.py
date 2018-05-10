@@ -1,7 +1,7 @@
 # pylint:disable=missing-docstring, invalid-name
 
-from     api.models import Role, User
-from     tests.base import BaseCase
+from api.models import Role, User
+from tests.base import BaseCase
 
 
 class TestRole(BaseCase):
@@ -28,6 +28,13 @@ class TestRole(BaseCase):
         self.assertFalse(Role.check_exists(id=1))
         self.role1.save()
         self.assertTrue(Role.check_exists(id=1))
+
+    def test_repr_role(self):
+        self.role1.save()
+        role1 = Role.get(id=1)
+        expected = ['id', 'title']
+        actual = list(role1.__repr__().keys())
+        self.assertEqual(expected, actual)
 
     def test_add_and_remove_users_from_role(self):
         self.user1.save()

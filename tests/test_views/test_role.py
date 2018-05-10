@@ -1,6 +1,6 @@
 # pylint:disable=missing-docstring, invalid-name
 
-from json import dumps, loads
+from json import loads
 
 from api.models import Role, User
 from tests.base import BaseCase
@@ -42,8 +42,8 @@ class TestRole(BaseCase):
             headers=self.headers)
         expected = {
             'status': 'fail',
-            'message': 'There are no roles in the system.',
-            'help': 'Ensure roles are seeded.'}
+            'message': 'The role does not exist.',
+            'help': 'Ensure role_id is existent.'}
         actual = loads(response.data)
         self.assertEqual(404, response.status_code)
         self.assertEqual(expected, actual)
@@ -99,14 +99,15 @@ class TestRole(BaseCase):
         expected = {
             'status': 'success',
             'data': {
-                'role': {'id': 1, 'title': 'basic'},
-                'users': [
-                    {'id': 1, 'email': 'first1.last1@email.com',
-                     'name': 'First1 Middle1 Last1',
-                     'phone_number': '000 12 3456781'},
-                    {'id': 2, 'email': 'first2.last2@email.com',
-                     'name': 'First2 Middle2 Last2',
-                     'phone_number': '000 12 3456782'}]}}
+                'role': {'id': 1,
+                         'title': 'basic',
+                         'users': [
+                             {'id': 1, 'email': 'first1.last1@email.com',
+                              'name': 'First1 Middle1 Last1',
+                              'phone_number': '000 12 3456781'},
+                             {'id': 2, 'email': 'first2.last2@email.com',
+                              'name': 'First2 Middle2 Last2',
+                              'phone_number': '000 12 3456782'}]}}}
         actual = loads(response.data)
         self.assertEqual(200, response.status_code)
         self.assertDictEqual(expected, actual)

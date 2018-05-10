@@ -29,6 +29,13 @@ class TestUnit(BaseCase):
         self.unit1.save()
         self.assertTrue(Unit.check_exists(id=1))
 
+    def test_repr_unit(self):
+        self.unit1.save()
+        unit1 = Unit.get(id=1)
+        expected = ['id', 'name', 'estate']
+        actual = [key for key in unit1.__repr__()]
+        self.assertEqual(expected, actual)
+
     def test_add_and_remove_payment_from_unit(self):
         self.unit1.save()
         self.payment1.save()

@@ -1,7 +1,7 @@
 # pylint:disable=missing-docstring, invalid-name
 
-from     api.models import Deposit, Payment
-from     tests.base import BaseCase
+from api.models import Deposit, Payment
+from tests.base import BaseCase
 
 
 class TestDeposit(BaseCase):
@@ -13,6 +13,14 @@ class TestDeposit(BaseCase):
         self.assertEqual(True, isinstance(Deposit.get(id=1), dict))
         self.deposit1.save()
         self.assertEqual(True, isinstance(Deposit.get(id=1), Deposit))
+
+    def test_view_deposit(self):
+        self.deposit1.save()
+        deposit1 = Deposit.get(id=1)
+        expected = ['id', 'amount', 'period_end',
+                    'period_start', 'timestamp', 'payment_id']
+        actual = list(deposit1.view().keys())
+        self.assertEqual(expected, actual)
 
     def test_get_all_deposits(self):
         self.assertEqual(True, isinstance(Deposit.get(id=1), dict))

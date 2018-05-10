@@ -1,7 +1,7 @@
 # pylint:disable=missing-docstring, invalid-name
 
-from     api.models import Board, Conversation, Estate, Unit, User
-from     tests.base import BaseCase
+from api.models import Board, Conversation, Estate, Unit, User
+from tests.base import BaseCase
 
 
 class TestBoard(BaseCase):
@@ -28,6 +28,13 @@ class TestBoard(BaseCase):
         self.board1.save()
         self.board2.save()
         self.assertEqual(2, len(Board.get_all()))
+
+    def test_repr_board(self):
+        self.board1.save()
+        board1 = Board.get(id=1)
+        expected = ['id', 'members']
+        actual = [key for key in board1.__repr__()]
+        self.assertEqual(expected, actual)
 
     def test_board_exists(self):
         self.board1.save()

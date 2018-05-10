@@ -28,6 +28,13 @@ class TestEstate(BaseCase):
         self.estate1.save()
         self.assertTrue(Estate.check_exists(id=1))
 
+    def test_repr_estate(self):
+        self.estate1.save()
+        estate1 = Estate.get(id=1)
+        expected = ['id', 'address']
+        actual = [key for key in estate1.__repr__()]
+        self.assertEqual(expected, actual)
+
     def test_add_and_remove_units_from_estate(self):
         self.estate1.save()
         self.unit1.save()

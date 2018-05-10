@@ -7,6 +7,7 @@ from flask_restful import Resource
 
 
 from api.helpers.auth import token_required, view_token
+from api.helpers.modelops import get_conversations
 from api.helpers.validation import validate_json
 from api.models import Conversation, User
 
@@ -57,35 +58,43 @@ class ConversationResource(Resource):
     def get(self, conversation_id=None):
         """
         Get a user's conversation(s).
-        """
-        user = User.get(email=view_token(
-            request.headers.get('Authorization'))['email'])
-        conversations = user.conversations
-        if conversation_id:
-            conversation = [conversation for conversation in conversations
-                            if conversation.id == conversation_id]
-            if conversation:
-                return {
-                    'status': 'success',
-                    'data': {
-                        'conversation': conversation[0].view()
-                    }
-                }, 200
-            return {
-                'status': 'fail',
-                'message': 'The conversation does not exist.',
-                'help': 'Ensure conversation_id is existent.'
-            }, 404
-        if conversations:
+        # """
+        result = get_conversations(request, conversation_id)
+        if isinstance(result, dict):
+            return result, 404
+        elif isinstance(result, list):
             return {
                 'status': 'success',
                 'data': {
                     'conversations': [
-                        conversation.view() for conversation in conversations]
+                        i.view() for i in result]
                 }
             }, 200
-        return {
-            'status': 'fail',
-            'message': 'The user has no conversations.',
-            'help': 'Open at least one conversation.'
-        }, 404
+        else:
+            return {
+                'status': 'success',
+                'data': {
+                    'conversation': result.view()
+                }
+            }, 200
+
+    def delete(self, conversation_id):
+        """
+        Delete a conversation.
+        Remove user, only delete if last member deletes.
+        """
+        result = get_conversations(request, conversation_id)
+        if isinstance(result, dict):
+            return result, 404
+        else:
+            no_participants = len(result.participants)
+            if no_participants == 1:
+                result.delete()
+            else:
+                user = User.get(email=view_token(
+                    request.headers.get('Authorization'))['email'])
+                user.remove('conversations', id=conversation_id)
+            return {
+                'status': 'success',
+                'message': 'The conversation has been deleted.'
+            }, 200

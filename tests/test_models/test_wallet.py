@@ -27,6 +27,13 @@ class TestWallet(BaseCase):
         self.wallet1.save()
         self.assertTrue(Wallet.check_exists(id=1))
 
+    def test_repr_wallet(self):
+        self.wallet1.save()
+        wallet1 = Wallet.get(id=1)
+        expected = ['id', 'balance']
+        actual = [key for key in wallet1.__repr__()]
+        self.assertEqual(expected, actual)
+
     def test_add_and_remove_payments_from_wallet(self):
         self.wallet1.save()
         self.payment1.save()

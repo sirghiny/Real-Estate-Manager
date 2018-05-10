@@ -2,12 +2,10 @@
 Role manipulation functionality.
 """
 
-from flask import request
 from flask_restful import Resource
 
 from api.helpers.auth import token_required
-from api.helpers.validation import validate_json
-from api.models import Role, User
+from api.helpers.modelops import get_roles
 
 
 class RoleResource(Resource):
@@ -20,36 +18,23 @@ class RoleResource(Resource):
         """
         View basic role(s) information.
         """
-        roles = Role.get_all()
-        if isinstance(roles, dict):
+        result = get_roles(role_id)
+        if isinstance(result, dict):
+            return result, 404
+        elif isinstance(result, list):
             return {
-                'status': 'fail',
-                'message': 'There are no roles in the system.',
-                'help': 'Ensure roles are seeded.'
-            }, 404
+                'status': 'success',
+                'data': {
+                    'roles': [role.__repr__() for role in result]
+                }
+            }, 200
         else:
-            if role_id:
-                try:
-                    role = [role.view() for role in roles][0]
-                    return {
-                        'status': 'success',
-                        'data': {
-                            'role': role
-                        }
-                    }, 200
-                except IndexError:
-                    return {
-                        'status': 'fail',
-                        'message': 'The role does not exist.',
-                        'help': 'Ensure role_id is existent.'
-                    }, 404
-            else:
-                return {
-                    'status': 'success',
-                    'data': {
-                        'roles': [role.view() for role in roles]
-                    }
-                }, 200
+            return {
+                'status': 'success',
+                'data': {
+                    'role': result.__repr__()
+                }
+            }, 200
 
 
 class RoleUsersResource(Resource):
@@ -62,15 +47,11 @@ class RoleUsersResource(Resource):
         """
         View the user's of a role.
         """
-        role = Role.get(id=role_id)
-        if isinstance(role, dict):
-            return {
-                'status': 'fail',
-                'message': 'The role does not exist.',
-                'help': 'Ensure role_id is existent.'
-            }, 404
+        result = get_roles(role_id)
+        if isinstance(result, dict):
+            return result, 404
         else:
-            users = role.users
+            users = result.users
             if not users:
                 return {
                     'status': 'fail',
@@ -81,7 +62,6 @@ class RoleUsersResource(Resource):
                 return {
                     'status': 'success',
                     'data': {
-                        'role': role.view(),
-                        'users': [user.view_public() for user in users]
+                        'role': result.view()
                     }
                 }, 200

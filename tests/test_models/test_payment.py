@@ -27,6 +27,13 @@ class TestPayment(BaseCase):
         self.payment1.save()
         self.assertTrue(Payment.check_exists(id=1))
 
+    def test_repr_payment(self):
+        self.payment1.save()
+        payment1 = Payment.get(id=1)
+        expected = ['id', 'required', 'balance']
+        actual = list(payment1.__repr__().keys())
+        self.assertEqual(expected, actual)
+
     def test_delete_payment(self):
         self.payment1.save()
         self.assertTrue(Payment.check_exists(id=1))
