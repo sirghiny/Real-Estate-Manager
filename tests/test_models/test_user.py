@@ -84,7 +84,7 @@ class TestUser(BaseCase):
         self.user1.save()
         user1 = User.get(id=1)
         user1.insert('wallet', self.wallet1)
-        user1.insert('conversations', [self.conversation1])
+        user1.insert('conversations', self.conversation1)
         user1.save()
         excepted = sorted(['id', 'email', 'name', 'phone_number',
                            'roles', 'wallet', 'conversations', 'boards'])
@@ -106,19 +106,8 @@ class TestUser(BaseCase):
         self.user1.save()
         user1 = User.get(id=1)
         excepted = "Ensure the values you're inserting are valid."
-        actual = user1.insert('boards', [{}])["message"]
+        actual = user1.insert('boards', {})["message"]
         self.assertEqual(excepted, actual)
-
-    def test_insert_many_not_list(self):
-        self.user1.save()
-        self.board1.save()
-        user1 = User.get(id=1)
-        excepted = {
-            "message": "Ensure objects passed are as a list.",
-            "help": "This eases updating of (one)many-to-many fields"
-        }
-        actual = user1.insert('boards', Board.get(id=1))
-        self.assertDictEqual(excepted, actual)
 
     def test_remove_wrong_field(self):
         self.user1.save()
@@ -136,7 +125,7 @@ class TestUser(BaseCase):
         self.board2.save()
         user1 = User.get(id=1)
         self.assertEqual(0, len(user1.boards))
-        user1.insert('boards', Board.get_all())
+        user1.insert('boards', *Board.get_all())
         self.assertEqual(2, len(user1.boards))
         user1.remove('boards', id=1)
         self.assertEqual(1, len(user1.boards))
@@ -165,7 +154,7 @@ class TestUser(BaseCase):
         self.conversation2.save()
         user1 = User.get(id=1)
         self.assertEqual(0, len(user1.conversations))
-        user1.insert('conversations', Conversation.get_all())
+        user1.insert('conversations', *Conversation.get_all())
         self.assertEqual(2, len(user1.conversations))
         user1.remove('conversations', id=1)
         self.assertEqual(1, len(user1.conversations))
@@ -178,7 +167,7 @@ class TestUser(BaseCase):
         self.role2.save()
         user1 = User.get(id=1)
         self.assertEqual(0, len(user1.roles))
-        user1.insert('roles', Role.get_all())
+        user1.insert('roles', *Role.get_all())
         self.assertEqual(2, len(user1.roles))
         user1.remove('roles', id=1)
         self.assertEqual(1, len(user1.roles))

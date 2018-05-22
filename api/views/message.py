@@ -36,7 +36,7 @@ class MessageResource(Resource):
                 message = Message(
                     sender=current_user_id,
                     content=payload['content'])
-                result.insert('messages', [message])
+                result.insert('messages', message)
                 return {
                     'status': 'success',
                     'data': {

@@ -13,7 +13,7 @@ class TestMessage(BaseCase):
 
     def test_send_message_correctly(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
+        User.get(id=1).insert('conversations', self.conversation1)
         response = self.client.post(
             '/api/v1/conversations/1/messages/',
             content_type='application/json',
@@ -28,7 +28,7 @@ class TestMessage(BaseCase):
 
     def test_send_message_missing_content(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
+        User.get(id=1).insert('conversations', self.conversation1)
         response = self.client.post(
             '/api/v1/conversations/1/messages/',
             content_type='application/json',
@@ -59,7 +59,7 @@ class TestMessage(BaseCase):
 
     def test_view_message_nonexistent_conversation(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
+        User.get(id=1).insert('conversations', self.conversation1)
         response = self.client.get(
             '/api/v1/conversations/2/messages/',
             headers=self.headers)
@@ -73,8 +73,8 @@ class TestMessage(BaseCase):
 
     def test_view_message(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
-        Conversation.get(id=1).insert('messages', [self.message1])
+        User.get(id=1).insert('conversations', self.conversation1)
+        Conversation.get(id=1).insert('messages', self.message1)
         response = self.client.get(
             '/api/v1/conversations/1/messages/1',
             headers=self.headers)
@@ -86,7 +86,7 @@ class TestMessage(BaseCase):
 
     def test_view_nonexistent_message_in_conversation(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
+        User.get(id=1).insert('conversations', self.conversation1)
         response = self.client.get(
             '/api/v1/conversations/1/messages/1',
             headers=self.headers)
@@ -100,9 +100,9 @@ class TestMessage(BaseCase):
 
     def test_view_messages(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
+        User.get(id=1).insert('conversations', self.conversation1)
         Conversation.get(id=1).insert(
-            'messages', [self.message1, self.message2])
+            'messages', self.message1, self.message2)
         response = self.client.get(
             '/api/v1/conversations/1/messages/',
             headers=self.headers)
@@ -121,7 +121,7 @@ class TestMessage(BaseCase):
         self.conversation1.save()
         user = User.get(id=1)
         conversation = Conversation.get(id=1)
-        user.insert('conversations', [conversation])
+        user.insert('conversations', conversation)
         response = self.client.get(
             '/api/v1/conversations/1/messages/',
             headers=self.headers)
@@ -147,7 +147,7 @@ class TestMessage(BaseCase):
 
     def test_delete_nonexistent_message(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
+        User.get(id=1).insert('conversations', self.conversation1)
         response = self.client.delete(
             '/api/v1/conversations/1/messages/1',
             headers=self.headers)
@@ -161,8 +161,8 @@ class TestMessage(BaseCase):
 
     def test_delete_message(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
-        Conversation.get(id=1).insert('messages', [self.message1])
+        User.get(id=1).insert('conversations', self.conversation1)
+        Conversation.get(id=1).insert('messages', self.message1)
         response = self.client.delete(
             '/api/v1/conversations/1/messages/1',
             headers=self.headers)
@@ -174,8 +174,8 @@ class TestMessage(BaseCase):
 
     def test_update_message(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
-        Conversation.get(id=1).insert('messages', [self.message1])
+        User.get(id=1).insert('conversations', self.conversation1)
+        Conversation.get(id=1).insert('messages', self.message1)
         response = self.client.patch(
             '/api/v1/conversations/1/messages/1',
             headers=self.headers,
@@ -205,8 +205,8 @@ class TestMessage(BaseCase):
 
     def test_update_message_no_data(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
-        Conversation.get(id=1).insert('messages', [self.message1])
+        User.get(id=1).insert('conversations', self.conversation1)
+        Conversation.get(id=1).insert('messages', self.message1)
         response = self.client.patch(
             '/api/v1/conversations/1/messages/1',
             headers=self.headers,

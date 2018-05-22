@@ -40,7 +40,7 @@ class TestWallet(BaseCase):
         self.payment2.save()
         wallet1 = Wallet.get(id=1)
         self.assertEqual(0, len(wallet1.payments))
-        wallet1.insert('payments', [Payment.get(id=1), Payment.get(id=2)])
+        wallet1.insert('payments', Payment.get(id=1), Payment.get(id=2))
         wallet1 = Wallet.get(id=1)
         self.assertEqual(True, isinstance(wallet1.payments[0], Payment))
         self.assertEqual(True, isinstance(wallet1.payments[1], Payment))

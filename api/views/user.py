@@ -36,7 +36,7 @@ class UserResource(Resource):
             )
             basic_role = Role.get(title='basic')
             new_wallet = Wallet()
-            new_user.insert('roles', [basic_role])
+            new_user.insert('roles', basic_role)
             new_user.insert('wallet', new_wallet)
             new_user_id = new_user.save()
             return {

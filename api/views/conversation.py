@@ -46,7 +46,7 @@ class ConversationResource(Resource):
                             'participants'][participants.index(i)]
                     }, 404
             conversation = Conversation()
-            conversation.insert('participants', participants)
+            conversation.insert('participants', *participants)
             return {
                 'status': 'success',
                 'data': {

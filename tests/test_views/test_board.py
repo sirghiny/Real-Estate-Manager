@@ -136,7 +136,7 @@ class TestBoard(BaseCase):
         self.user1.save()
         self.user2.save()
         board1 = Board.get(id=1)
-        board1.insert('members', User.get_all())
+        board1.insert('members', *User.get_all())
         response = self.client.get(
             '/api/v1/boards/1/members/',
             headers=self.headers)
@@ -244,7 +244,7 @@ class TestBoard(BaseCase):
         unit1.insert('board', self.board1)
         unit1.insert('payment', self.payment1)
         unit1.insert('resident', self.user1)
-        Board.get(id=1).insert('units_owned', [Unit.get(id=1)])
+        Board.get(id=1).insert('units_owned', Unit.get(id=1))
         response = self.client.get('/api/v1/boards/1/units/')
         expected = {
             'status': 'success',
@@ -268,7 +268,7 @@ class TestBoard(BaseCase):
         self.user2.save()
         board1 = Board.get(id=1)
         board1.insert('conversation', self.conversation1)
-        board1.insert('members', [User.get(id=1)])
+        board1.insert('members', User.get(id=1))
         response = self.client.patch(
             '/api/v1/boards/1/members/',
             headers=self.headers,
@@ -293,7 +293,7 @@ class TestBoard(BaseCase):
         self.user2.save()
         board1 = Board.get(id=1)
         board1.insert('conversation', self.conversation1)
-        board1.insert('members', [User.get(id=1), User.get(id=2)])
+        board1.insert('members', User.get(id=1), User.get(id=2))
         response = self.client.patch(
             '/api/v1/boards/1/members/',
             headers=self.headers,
@@ -315,7 +315,7 @@ class TestBoard(BaseCase):
         self.user2.save()
         board1 = Board.get(id=1)
         board1.insert('conversation', self.conversation1)
-        board1.insert('members', [User.get(id=1)])
+        board1.insert('members', User.get(id=1))
         response = self.client.patch(
             '/api/v1/boards/1/members/',
             headers=self.headers,
@@ -336,7 +336,7 @@ class TestBoard(BaseCase):
         self.user1.save()
         board1 = Board.get(id=1)
         board1.insert('conversation', self.conversation1)
-        board1.insert('members', [User.get(id=1)])
+        board1.insert('members', User.get(id=1))
         response = self.client.patch(
             '/api/v1/boards/1/members/',
             headers=self.headers,
@@ -354,7 +354,7 @@ class TestBoard(BaseCase):
         self.user1.save()
         board1 = Board.get(id=1)
         board1.insert('conversation', self.conversation1)
-        board1.insert('members', [User.get(id=1)])
+        board1.insert('members', User.get(id=1))
         response = self.client.patch(
             '/api/v1/boards/1/members/',
             headers=self.headers,

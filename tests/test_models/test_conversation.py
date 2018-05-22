@@ -44,7 +44,7 @@ class TestConversation(BaseCase):
         conversation1 = Conversation.get(id=1)
         self.assertEqual(0, len(conversation1.messages))
         conversation1.insert(
-            'messages', [Message.get(id=1), Message.get(id=2)])
+            'messages', Message.get(id=1), Message.get(id=2))
         self.assertEqual(True, isinstance(conversation1.messages[0], Message))
         self.assertEqual(True, isinstance(conversation1.messages[1], Message))
         self.assertEqual(2, len(conversation1.messages))
