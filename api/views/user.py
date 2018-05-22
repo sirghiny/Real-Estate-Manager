@@ -36,7 +36,7 @@ class UserResource(Resource):
             )
             basic_role = Role.get(title='basic')
             new_wallet = Wallet()
-            new_user.insert('roles', [basic_role])
+            new_user.insert('roles', basic_role)
             new_user.insert('wallet', new_wallet)
             new_user_id = new_user.save()
             return {
@@ -55,8 +55,7 @@ class UserResource(Resource):
         View a user's information.
         """
         if request.args.get('q'):
-            name = request.args.get('q')
-            result = search_users(name)
+            result = search_users(request.args.get('q'))
             if 'message' in result:
                 return result, 404
             else:
@@ -85,9 +84,7 @@ class UserResource(Resource):
                     request.headers.get('Authorization'))['id'])
                 return {
                     'status': 'success',
-                    'data': {
-                        'user': updated_user.view()
-                    }
+                    'data': {'user': updated_user.view()}
                 }, 200
             else:
                 return update_result, 400
@@ -149,9 +146,7 @@ class UserBoardsResource(Resource):
             else:
                 return {
                     'status': 'success',
-                    'data': {
-                        'boards': [board.view() for board in boards]
-                    }
+                    'data': {'boards': [board.view() for board in boards]}
                 }, 200
 
 
@@ -171,9 +166,7 @@ class UserRolesResource(Resource):
         else:
             return {
                 'status': 'success',
-                'data': {
-                    'roles': [role.__repr__() for role in result.roles]
-                }
+                'data': {'roles': [role.__repr__() for role in result.roles]}
             }, 200
 
 
@@ -194,7 +187,5 @@ class UserWalletResource(Resource):
             wallet = result.wallet.view()
             return {
                 'status': 'success',
-                'data': {
-                    'wallet': wallet
-                }
+                'data': {'wallet': wallet}
             }, 200

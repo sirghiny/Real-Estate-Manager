@@ -61,7 +61,7 @@ class BoardResource(Resource):
                             'members'][members.index(i)]
                     }, 404
             board = Board()
-            board.insert('members', members)
+            board.insert('members', *members)
             board_conversation = Conversation()
             board_conversation.participants.extend(members)
             board.insert('conversation', board_conversation)
@@ -193,9 +193,9 @@ class BoardMembersResource(Resource):
                                 'help': 'Ensure ids are of existent users.'
                             }, 404
                         else:
-                            result.insert('members', [i_user])
+                            result.insert('members', i_user)
                             result.conversation.insert(
-                                'participants', [i_user])
+                                'participants', i_user)
                 if payload['new_data']['remove']:
                     members = [i.id for i in result.members]
                     for i in payload['new_data']['remove']:

@@ -36,12 +36,10 @@ class MessageResource(Resource):
                 message = Message(
                     sender=current_user_id,
                     content=payload['content'])
-                result.insert('messages', [message])
+                result.insert('messages', message)
                 return {
                     'status': 'success',
-                    'data': {
-                        'updated_conversation': result.view()
-                    }
+                    'data': {'updated_conversation': result.view()}
                 }, 201
 
     def get(self, conversation_id, message_id=None):
@@ -54,18 +52,12 @@ class MessageResource(Resource):
         elif isinstance(result, list):
             return {
                 'status': 'success',
-                'data': {
-                    'messages': [
-                        message.view() for message in result
-                    ]
-                }
+                'data': {'messages': [message.view() for message in result]}
             }, 200
         else:
             return {
                 'status': 'success',
-                'data': {
-                    'message': result.view()
-                }
+                'data': {'message': result.view()}
             }, 200
 
     def delete(self, conversation_id, message_id):
@@ -80,9 +72,7 @@ class MessageResource(Resource):
             updated_conversation = Conversation.get(id=conversation_id).view()
             return {
                 'status': 'success',
-                'data': {
-                    'updated_conversation': updated_conversation
-                }
+                'data': {'updated_conversation': updated_conversation}
             }, 200
 
     def patch(self, conversation_id, message_id):
@@ -99,9 +89,7 @@ class MessageResource(Resource):
                     id=conversation_id).view()
                 return {
                     'status': 'success',
-                    'data': {
-                        'updated_conversation': updated_conversation
-                    }
+                    'data': {'updated_conversation': updated_conversation}
                 }, 200
             else:
                 return update_result, 400

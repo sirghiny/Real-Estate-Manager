@@ -103,7 +103,7 @@ class TestConversation(BaseCase):
         self.user1.save()
         self.conversation1.save()
         user1 = User.get(id=1)
-        user1.insert('conversations', [Conversation.get(id=1)])
+        user1.insert('conversations', Conversation.get(id=1))
         response = self.client.get(
             '/api/v1/conversations/1',
             headers=self.headers)
@@ -119,8 +119,8 @@ class TestConversation(BaseCase):
         self.conversation1.save()
         self.conversation2.save()
         user1 = User.get(id=1)
-        user1.insert('conversations', [
-                     Conversation.get(id=1), Conversation.get(id=2)])
+        user1.insert('conversations',
+                     Conversation.get(id=1), Conversation.get(id=2))
         response = self.client.get(
             '/api/v1/conversations/',
             headers=self.headers)
@@ -150,7 +150,7 @@ class TestConversation(BaseCase):
 
     def test_delete_conversations_when_specific_does_not_exist(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
+        User.get(id=1).insert('conversations', self.conversation1)
         response = self.client.delete(
             '/api/v1/conversations/2/',
             headers=self.headers)
@@ -165,7 +165,7 @@ class TestConversation(BaseCase):
 
     def test_delete_conversations_when_only_one_participant_is_left(self):
         self.user1.save()
-        User.get(id=1).insert('conversations', [self.conversation1])
+        User.get(id=1).insert('conversations', self.conversation1)
         response = self.client.delete(
             '/api/v1/conversations/1/',
             headers=self.headers)
@@ -181,7 +181,7 @@ class TestConversation(BaseCase):
 
     def test_delete_conversations_when_only_participants_are_left(self):
         self.conversation1.save()
-        Conversation.get(id=1).insert('participants', [self.user1, self.user2])
+        Conversation.get(id=1).insert('participants', self.user1, self.user2)
         response = self.client.delete(
             '/api/v1/conversations/1/',
             headers=self.headers)

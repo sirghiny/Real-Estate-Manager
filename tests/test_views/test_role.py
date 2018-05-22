@@ -93,7 +93,7 @@ class TestRole(BaseCase):
         self.user1.save()
         self.user2.save()
         role1 = Role.get(id=1)
-        role1.insert('users', User.get_all())
+        role1.insert('users', *User.get_all())
         response = self.client.get('/api/v1/roles/1/users/',
                                    headers=self.headers)
         expected = {

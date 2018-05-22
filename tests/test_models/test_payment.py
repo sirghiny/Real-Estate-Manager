@@ -62,7 +62,7 @@ class TestPayment(BaseCase):
         payment1.estate = Estate.get(id=1)
         payment1.unit = Unit.get(id=1)
         payment1.wallet = Wallet.get(id=1)
-        payment1.insert('deposits', [Deposit.get(id=1), Deposit.get(id=2)])
+        payment1.insert('deposits', Deposit.get(id=1), Deposit.get(id=2))
         self.assertEqual(True, isinstance(payment1.estate, Estate))
         self.assertEqual(True, isinstance(payment1.unit, Unit))
         self.assertEqual(True, isinstance(payment1.wallet, Wallet))

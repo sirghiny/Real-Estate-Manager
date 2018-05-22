@@ -25,16 +25,12 @@ class EstateResource(Resource):
         elif isinstance(result, list):
             return {
                 'status': 'success',
-                'data': {
-                    'estates': [estate.view() for estate in result]
-                }
+                'data': {'estates': [estate.view() for estate in result]}
             }, 200
         else:
             return {
                 'status': 'success',
-                'data': {
-                    'estate': result.view()
-                }
+                'data': {'estate': result.view()}
             }, 200
 
     def post(self):
@@ -93,9 +89,7 @@ class EstatePaymentResource(Resource):
             payment = result.payment.view()
             return {
                 'status': 'success',
-                'data': {
-                    'payment': payment
-                }
+                'data': {'payment': payment}
             }, 200
 
     def patch(self):

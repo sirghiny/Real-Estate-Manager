@@ -24,16 +24,12 @@ class RoleResource(Resource):
         elif isinstance(result, list):
             return {
                 'status': 'success',
-                'data': {
-                    'roles': [role.__repr__() for role in result]
-                }
+                'data': {'roles': [role.__repr__() for role in result]}
             }, 200
         else:
             return {
                 'status': 'success',
-                'data': {
-                    'role': result.__repr__()
-                }
+                'data': {'role': result.__repr__()}
             }, 200
 
 
@@ -61,7 +57,5 @@ class RoleUsersResource(Resource):
             else:
                 return {
                     'status': 'success',
-                    'data': {
-                        'role': result.view()
-                    }
+                    'data': {'role': result.view()}
                 }, 200

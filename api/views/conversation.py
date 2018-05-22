@@ -46,12 +46,10 @@ class ConversationResource(Resource):
                             'participants'][participants.index(i)]
                     }, 404
             conversation = Conversation()
-            conversation.insert('participants', participants)
+            conversation.insert('participants', *participants)
             return {
                 'status': 'success',
-                'data': {
-                    'conversation': conversation.view()
-                }
+                'data': {'conversation': conversation.view()}
             }, 201
 
     @token_required
@@ -65,17 +63,12 @@ class ConversationResource(Resource):
         elif isinstance(result, list):
             return {
                 'status': 'success',
-                'data': {
-                    'conversations': [
-                        i.view() for i in result]
-                }
+                'data': {'conversations': [i.view() for i in result]}
             }, 200
         else:
             return {
                 'status': 'success',
-                'data': {
-                    'conversation': result.view()
-                }
+                'data': {'conversation': result.view()}
             }, 200
 
     def delete(self, conversation_id):

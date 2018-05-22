@@ -229,10 +229,10 @@ def update_resource(request, resource):
     val_result = validate_json(['new_data'], payload)
     if isinstance(val_result, bool) is True:
         update_result = resource.update(payload['new_data'])
-        if isinstance(update_result, bool) is True:
-            return True
-        else:
+        if isinstance(update_result, dict):
             return update_result
+        else:
+            return True
     else:
         return {
             'status': 'fail',

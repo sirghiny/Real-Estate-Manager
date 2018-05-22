@@ -38,14 +38,9 @@ class BaseModel(db.Model):
                 "exception": str(e)
             }
 
-    def insert(self, field, values):
+    def insert(self, field, *values):
         """
         Insert values into a relationship field.
-        If inserting one-to-one or reverse one-to-many, values is an object.
-        For example(model.insert('field', object))
-        If inserting many-to-many or one-to-many, values are a list of objects.
-        For example(model.insert('field', [object1, ...]))
-        If only one object, (model.insert('field', [object1]))
         """
         try:
             current_values = getattr(self, field)
@@ -55,49 +50,24 @@ class BaseModel(db.Model):
                 "help": "The field should be an attribute of the object."
             }
         if isinstance(current_values, InstrumentedList):
-            if not isinstance(values, list):
-                return {
-                    "message": "Ensure objects passed are as a list.",
-                    "help": "This eases updating of (one)many-to-many fields"
-                }
             try:
-                current_values.extend(values)
+                current_values.extend(list(values))
             except Exception as e:
                 return {
                     "message": "Ensure the values you're inserting are valid.",
                     "help": "The objects should relate to the inserted field.",
                     "exception": str(e)
                 }
-            try:
-                db.session.add(self)
-                db.session.commit()
-                return True
-            except Exception as e:
-                db.session.rollback()
-                return {
-                    "message": "Ensure the object you're saving is valid",
-                    "help": "Has all fields and doesn't repeat unique values.",
-                    "exception": str(e)
-                }
+            self.save()
         try:
-            setattr(self, field, values)
+            setattr(self, field, values[0])
         except Exception as e:
             return {
                 "message": "Ensure the values you're inserting are valid.",
                 "help": "The objects should relate to the inserted field.",
                 "exception": str(e)
             }
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            db.session.rollback()
-            return {
-                "message": "Ensure the object you're saving is valid",
-                "help": "Has all fields and doesn't repeat unique values.",
-                "exception": str(e)
-            }
+        self.save()
 
     def remove(self, field, **kwargs):
         """
@@ -131,17 +101,7 @@ class BaseModel(db.Model):
                 setattr(self, field, InstrumentedList([]))
         else:
             setattr(self, field, None)
-        try:
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except Exception as e:
-            db.session.rollback()
-            return {
-                "message": "Ensure the object saved after deletion is valid",
-                "help": "Has all fields and doesn't repeat unique values.",
-                "exception": str(e)
-            }
+        self.save()
 
     def save(self):
         """
@@ -182,16 +142,7 @@ class BaseModel(db.Model):
                     "message": "Error encountered when setting attributes.",
                     "help": "Ensure all fields you're updating are valid."
                 }
-        try:
-            db.session.commit()
-            return True
-        except Exception as e:
-            db.session.rollback()
-            return {
-                "message": "Database encountered error upon updating.",
-                "help": "Ensure the database is running properly.",
-                "exception": str(e)
-            }
+        self.save()
 
     @classmethod
     def check_exists(cls, **kwargs):

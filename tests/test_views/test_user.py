@@ -199,7 +199,7 @@ class TestUser(BaseCase):
         self.user1.save()
         self.board1.save()
         user1 = User.get(id=1)
-        user1.insert('boards', [Board.get(id=1)])
+        user1.insert('boards', Board.get(id=1))
         response = self.client.get(
             '/api/v1/users/1/boards/',
             headers=self.headers)
@@ -232,7 +232,7 @@ class TestUser(BaseCase):
         self.user1.save()
         self.role1.save()
         user1 = User.get(id=1)
-        user1.insert('roles', Role.get_all())
+        user1.insert('roles', *Role.get_all())
         response = self.client.get(
             '/api/v1/users/1/roles/',
             headers=self.headers)
