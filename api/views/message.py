@@ -1,3 +1,4 @@
+"""Message manipulation functionality."""
 from flask import request
 from flask_restful import Resource
 
@@ -10,14 +11,10 @@ from api.models import Conversation, Message
 
 
 class MessageResource(Resource):
-    """
-    Message view functions.
-    """
+    """Message view functions."""
 
     def post(self, conversation_id):
-        """
-        Send a message into a conversation.
-        """
+        """Send a message into a conversation."""
         payload = request.get_json()
         required = ['content']
         result = validate_json(required, payload, empty=True)
@@ -43,9 +40,7 @@ class MessageResource(Resource):
                 }, 201
 
     def get(self, conversation_id, message_id=None):
-        """
-        View message(s).
-        """
+        """View message(s)."""
         result = get_messages(request, conversation_id, message_id)
         if isinstance(result, dict):
             return result, 404
@@ -61,9 +56,7 @@ class MessageResource(Resource):
             }, 200
 
     def delete(self, conversation_id, message_id):
-        """
-        Delete message.
-        """
+        """Delete message."""
         result = get_messages(request, conversation_id, message_id)
         if isinstance(result, dict):
             return result, 404
@@ -76,9 +69,7 @@ class MessageResource(Resource):
             }, 200
 
     def patch(self, conversation_id, message_id):
-        """
-        Edit a message.
-        """
+        """Edit a message."""
         result = get_messages(request, conversation_id, message_id)
         if isinstance(result, dict):
             return result, 404

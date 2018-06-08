@@ -1,6 +1,4 @@
-"""
-Run the application.
-"""
+"""Run the application."""
 
 from main import app
 

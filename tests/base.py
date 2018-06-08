@@ -1,3 +1,4 @@
+"""Base test class."""
 # pylint:disable=missing-docstring, invalid-name, too-many-instance-attributes
 
 from os import getenv
@@ -12,14 +13,10 @@ from main import create_app
 
 
 class BaseCase(TestCase):
-    """
-    Base class to be inherited by all other testcases.
-    """
+    """Base class to be inherited by all other testcases."""
 
     def setUp(self):
-        """
-        Set up test application.
-        """
+        """Set up test application."""
         self.app = create_app('testing')
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
@@ -91,9 +88,7 @@ class BaseCase(TestCase):
             'bad_field': "random"}
 
     def tearDown(self):
-        """
-        Delete database and recreate it with no data.
-        """
+        """Delete database and recreate it with no data."""
         db.session.remove()
         db.drop_all()
         self.app_context.pop()

@@ -1,6 +1,4 @@
-"""
-Create the application instance.
-"""
+"""Create the application instance."""
 
 from flask import Flask
 from flask_jwt_extended import JWTManager
@@ -14,9 +12,7 @@ from resources import add_resources
 
 
 def create_app(configuration):
-    """
-    Create the flask app.
-    """
+    """Create the flask app."""
     app = Flask(__name__)
     app.config.from_object(configurations[configuration])
     app_context = app.app_context()

@@ -1,6 +1,4 @@
-"""
-Models and their methods.
-"""
+"""Models and their methods."""
 
 from operator import itemgetter
 from time import time
@@ -16,16 +14,12 @@ db = SQLAlchemy()
 
 
 class BaseModel(db.Model):
-    """
-    Base model with all main requirements of a model.
-    """
+    """Base model with all main requirements of a model."""
 
     __abstract__ = True
 
     def delete(self):
-        """
-        Delete an object from the database.
-        """
+        """Delete an object from the database."""
         try:
             db.session.delete(self)
             db.session.commit()
@@ -33,23 +27,28 @@ class BaseModel(db.Model):
         except Exception as e:
             db.session.rollback()
             return {
-                "message": "Database encountered an error upon deletion.",
+                "message": "Error encountered during deletion.",
                 "help": "Ensure the database is running properly.",
                 "exception": str(e)
             }
 
-    def insert(self, field, *values):
-        """
-        Insert values into a relationship field.
-        """
+    def get_field(self, field):
+        """Get the value in an object's field."""
         try:
-            current_values = getattr(self, field)
+            values = getattr(self, field)
+            return values
         except AttributeError:
             return {
                 "message": "Ensure the  field passed is valid.",
                 "help": "The field should be an attribute of the object."
             }
-        if isinstance(current_values, InstrumentedList):
+
+    def insert(self, field, *values):
+        """Insert values into a relationship field."""
+        current_values = self.get_field(field)
+        if isinstance(current_values, dict):
+            return current_values
+        elif isinstance(current_values, InstrumentedList):
             try:
                 current_values.extend(list(values))
             except Exception as e:
@@ -72,17 +71,14 @@ class BaseModel(db.Model):
     def remove(self, field, **kwargs):
         """
         Remove values from a relationship field.
+
         This replaces the value with None or an empty list.
         Pass in the field and unique argument to isolate object for removal.
         """
-        try:
-            current_values = getattr(self, field)
-        except AttributeError:
-            return {
-                "message": "Ensure the  field passed is valid.",
-                "help": "The field should be an attribute of the object."
-            }
-        if isinstance(current_values, InstrumentedList):
+        current_values = self.get_field(field)
+        if isinstance(current_values, dict):
+            return current_values
+        elif isinstance(current_values, InstrumentedList):
             if kwargs:
                 key = [i for i in kwargs][0]
                 try:
@@ -104,9 +100,7 @@ class BaseModel(db.Model):
         self.save()
 
     def save(self):
-        """
-        Save an object in the database.
-        """
+        """Save an object in the database."""
         try:
             db.session.add(self)
             db.session.commit()
@@ -120,18 +114,14 @@ class BaseModel(db.Model):
             }
 
     def serialize(self):
-        """
-        Convert sqlalchemy object to dictionary.
-        """
+        """Convert sqlalchemy object to dictionary."""
         return {
             column.name: getattr(self, column.name)
             for column in self.__table__.columns
         }
 
     def update(self, new_data):
-        """
-        Update an object with new information.
-        """
+        """Update an object with new information."""
         all_keys = [key for key in self.__dict__]
         keys = [key for key in new_data]
         for key in keys:
@@ -146,16 +136,12 @@ class BaseModel(db.Model):
 
     @classmethod
     def check_exists(cls, **kwargs):
-        """
-        Check whether an object exists in the database.
-        """
+        """Check whether an object exists in the database."""
         return bool(cls.query.filter_by(**kwargs).first())
 
     @classmethod
     def drop(cls):
-        """
-        Delete all objects of a table.
-        """
+        """Delete all objects of a table."""
         objects = cls.get_all()
         if isinstance(objects, dict) is False:
             for i in cls.get_all():
@@ -166,9 +152,7 @@ class BaseModel(db.Model):
 
     @classmethod
     def get(cls, **kwargs):
-        """
-        Get a specific object from the database.
-        """
+        """Get a specific object from the database."""
         result = cls.query.filter_by(**kwargs).first()
         if not result:
             return {
@@ -179,9 +163,7 @@ class BaseModel(db.Model):
 
     @classmethod
     def get_all(cls):
-        """
-        Get all objects of a specific table.
-        """
+        """Get all objects of a specific table."""
         result = cls.query.all()
         if not result:
             return {
@@ -192,10 +174,7 @@ class BaseModel(db.Model):
 
     @classmethod
     def search(cls, **kwargs):
-        """
-        Search through values of string fields.
-        If searched value is a substring of a field, return the field's object.
-        """
+        """Search through values of string fields."""
         key = [key for key in kwargs][0]
         objects = cls.get_all()
         if isinstance(objects, dict):
@@ -253,9 +232,8 @@ user_roles = db.Table(
 
 
 class User(BaseModel):
-    """
-    User's model.
-    """
+    """User's model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     email = db.Column(db.String(),
@@ -293,17 +271,13 @@ class User(BaseModel):
                              cascade="all,delete")
 
     def __repr__(self):
-        """
-        Summarized view of a user.
-        """
+        """Summarized view of a user."""
         user = self.serialize()
         del user['password']
         return user
 
     def view(self):
-        """
-        Detailed view of a user.
-        """
+        """Detailed view of a user."""
         boards = [board.serialize() for board in self.boards]
         conversations = [conversation.view()
                          for conversation in self.conversations]
@@ -319,9 +293,8 @@ class User(BaseModel):
 
 
 class Board(BaseModel):
-    """
-    Board model.
-    """
+    """Board model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     estates_owned = db.relationship('Estate',
@@ -339,18 +312,14 @@ class Board(BaseModel):
                                    cascade="all,delete")
 
     def __repr__(self):
-        """
-        Summarized view of a board.
-        """
+        """Summarized view of a board."""
         return {
             'id': self.id,
             'members': [i.__repr__() for i in self.members]
         }
 
     def view(self):
-        """
-        Detailed view of a board.
-        """
+        """Detailed view of a board."""
         board = self.serialize()
         board.update({'members': [i.__repr__() for i in self.members]})
         board.update({'estates_owned': [i.__repr__()
@@ -360,9 +329,8 @@ class Board(BaseModel):
 
 
 class Estate(BaseModel):
-    """
-    Estate model.
-    """
+    """Estate model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     address = db.Column(db.String(),
@@ -380,15 +348,11 @@ class Estate(BaseModel):
                          nullable=True)
 
     def __repr__(self):
-        """
-        Summarized view of an estate.
-        """
+        """Summarized view of an estate."""
         return {'id': self.id, 'address': self.address}
 
     def view(self):
-        """
-        Detailed view of an estate.
-        """
+        """Detailed view of an estate."""
         estate = self.serialize()
         estate.update({'board': self.board.__repr__()})
         estate.update({'payment': self.payment.__repr__()})
@@ -397,9 +361,8 @@ class Estate(BaseModel):
 
 
 class Unit(BaseModel):
-    """
-    Unit model.
-    """
+    """Unit model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     name = db.Column(db.String(),
@@ -419,16 +382,12 @@ class Unit(BaseModel):
                         nullable=True)
 
     def __repr__(self):
-        """
-        Summarized view of a unit.
-        """
+        """Summarized view of a unit."""
         return {'id': self.id, 'name': self.name,
                 'estate': self.estate.__repr__()}
 
     def view(self):
-        """
-        Detailed view of a unit.
-        """
+        """Detailed view of a unit."""
         unit = self.serialize()
         unit.update({'board': self.board.__repr__()})
         unit.update({'estate': self.estate.__repr__()})
@@ -438,9 +397,8 @@ class Unit(BaseModel):
 
 
 class Wallet(BaseModel):
-    """
-    Wallet model.
-    """
+    """Wallet model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     balance = db.Column(db.Float(),
@@ -454,18 +412,14 @@ class Wallet(BaseModel):
                         nullable=True)
 
     def __repr__(self):
-        """
-        Summarized view of a wallet.
-        """
+        """Summarized view of a wallet."""
         return {
             'id': self.id,
             'balance': self.balance
         }
 
     def view(self):
-        """
-        Detailed view of a wallet.
-        """
+        """Detailed view of a wallet."""
         wallet = self.serialize()
         payments = [i.view() for i in self.payments]
         wallet.update({'payments': payments})
@@ -473,9 +427,8 @@ class Wallet(BaseModel):
 
 
 class Payment(BaseModel):
-    """
-    Payment model.
-    """
+    """Payment model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     balance = db.Column(db.Float(),
@@ -498,9 +451,7 @@ class Payment(BaseModel):
                           nullable=True)
 
     def __repr__(self):
-        """
-        Summarized view of a payment.
-        """
+        """Summarized view of a payment."""
         return {
             'id': self.id,
             'required': self.required,
@@ -508,9 +459,7 @@ class Payment(BaseModel):
         }
 
     def view(self):
-        """
-        Detailed view of a payment.
-        """
+        """Detailed view of a payment."""
         payment = self.serialize()
         deposits = [i.view() for i in self.deposits]
         payment.update({'deposits': deposits})
@@ -518,9 +467,8 @@ class Payment(BaseModel):
 
 
 class Deposit(BaseModel):
-    """
-    Deposit model.
-    """
+    """Deposit model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     amount = db.Column(db.Float(),
@@ -536,16 +484,13 @@ class Deposit(BaseModel):
                            nullable=True)
 
     def view(self):
-        """
-        Detailed view of a deposit.
-        """
+        """Detailed view of a deposit."""
         return self.serialize()
 
 
 class Conversation(BaseModel):
-    """
-    Conversation model.
-    """
+    """Conversation model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     timestamp = db.Column(db.Float(),
@@ -562,9 +507,7 @@ class Conversation(BaseModel):
                          nullable=True)
 
     def __repr__(self):
-        """
-        Summarized view of a conversation.
-        """
+        """Summarized view of a conversation."""
         try:
             last_message = self.messages[-1].view()
         except IndexError:
@@ -575,9 +518,7 @@ class Conversation(BaseModel):
         }
 
     def view(self):
-        """
-        Detailed view of a conversation.
-        """
+        """Detailed view of a conversation."""
         conversation = self.serialize()
         conversation.update({'participants': [i.__repr__()
                                               for i in self.participants]})
@@ -589,9 +530,8 @@ class Conversation(BaseModel):
 
 
 class Message(BaseModel):
-    """
-    Message model.
-    """
+    """Message model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     content = db.Column(db.String(),
@@ -607,31 +547,24 @@ class Message(BaseModel):
                                 nullable=True)
 
     def view(self):
-        """
-        Detailed view of a message.
-        """
+        """Detailed view of a message."""
         return self.serialize()
 
 
 class Role(BaseModel):
-    """
-    Role model.
-    """
+    """Role model."""
+
     id = db.Column(db.Integer(),
                    primary_key=True)
     title = db.Column(db.String(),
                       nullable=False)
 
     def __repr__(self):
-        """
-        Summarized view of a role.
-        """
+        """Summarized view of a role."""
         return self.serialize()
 
     def view(self):
-        """
-        Detailed view of a role.
-        """
+        """Detailed view of a role."""
         role = self.serialize()
         role.update({'users': [i.__repr__() for i in self.users]})
         return role

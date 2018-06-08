@@ -1,6 +1,4 @@
-"""
-Helper functions to deal with authentication and authorization.
-"""
+"""Helper functions to deal with authentication and authorization."""
 from datetime import timedelta
 from functools import wraps
 from os import getenv
@@ -16,27 +14,21 @@ from api.models import User
 
 
 def decrypt(data):
-    """
-    Decrypt data.
-    """
+    """Decrypt data."""
     cryptographic_key = getenv('CRYPTOGRAPHIC_KEY').encode('utf-8')
     f = Fernet(cryptographic_key)
     return eval((f.decrypt((data).encode('utf-8'))).decode('utf-8'))
 
 
 def encrypt(data):
-    """
-    Encrypt data.
-    """
+    """Encrypt data."""
     cryptographic_key = getenv('CRYPTOGRAPHIC_KEY').encode('utf-8')
     f = Fernet(cryptographic_key)
     return (f.encrypt(str(data).encode('utf-8'))).decode('utf-8')
 
 
 def create_token(email):
-    """
-    Create access token and return it.
-    """
+    """Create access token and return it."""
     token_fields = ['id', 'email', 'name']
     user = User.get(email=email)
     user_roles = [role.title for role in user.roles]
@@ -51,9 +43,7 @@ def create_token(email):
 
 
 def view_token(token):
-    """
-    View information inside token.
-    """
+    """View information inside token."""
     decoded = decode(
         token,
         getenv('JWT_KEY'),
@@ -63,14 +53,10 @@ def view_token(token):
 
 
 def token_required(f):
-    """
-    Protect view functions.
-    """
+    """Protect view functions."""
     @wraps(f)
     def decorated(*args, **kwargs):
-        """
-        Wrap function.
-        """
+        """Wrap function."""
         token = request.headers.get('Authorization')
         if not token:
             return {

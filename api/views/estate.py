@@ -1,24 +1,18 @@
-"""
-Estate manipulation functionality.
-"""
+"""Estate manipulation functionality."""
 
 from flask import request
 from flask_restful import Resource
 
 from api.helpers.modelops import get_boards, get_estates
 from api.helpers.validation import validate_json
-from api.models import Board, Estate
+from api.models import Estate
 
 
 class EstateResource(Resource):
-    """
-    View functions for estates.
-    """
+    """View functions for estates."""
 
     def get(self, estate_id=None):
-        """
-        View an estate(s).
-        """
+        """View an estate(s)."""
         result = get_estates(estate_id)
         if isinstance(result, dict):
             return result, 404
@@ -34,9 +28,7 @@ class EstateResource(Resource):
             }, 200
 
     def post(self):
-        """
-        Create an estate.
-        """
+        """Create an estate."""
         payload = request.get_json()
         required = ['address', 'board_id']
         result = validate_json(required, payload)
@@ -61,27 +53,19 @@ class EstateResource(Resource):
             }, 400
 
     def patch(self, estate_id):
-        """
-        Edit an estate.
-        """
+        """Edit an estate."""
         pass
 
     def delete(self, estate_id):
-        """
-        Delete an estate.
-        """
+        """Delete an estate."""
         pass
 
 
 class EstatePaymentResource(Resource):
-    """
-    View functions for estate payments.
-    """
+    """View functions for estate payments."""
 
     def get(self, estate_id):
-        """
-        View an estate's payment details.
-        """
+        """View an estate's payment details."""
         result = get_estates(estate_id)
         if isinstance(result, dict):
             return result, 404
@@ -93,31 +77,29 @@ class EstatePaymentResource(Resource):
             }, 200
 
     def patch(self):
-        """
-        Make a deposit for an estate's payment.
-        """
+        """Make a deposit for an estate's payment."""
         pass
 
     def delete(self, estate_id):
-        """
-        Clear an estate's payment history.
-        """
-        pass
+        """Clear an estate's payment history."""
+        result = get_estates(estate_id)
+        if isinstance(result, dict):
+            return result, 404
+        else:
+            result.delete()
+            return {
+                'status': 'success',
+                'message': 'The estate has been deleted.'
+            }, 200
 
 
 class EstateUnitsResource(Resource):
-    """
-    View functions for estate units.
-    """
+    """View functions for estate units."""
 
     def get(self, unit_id=None):
-        """
-        Get estate unit(s).
-        """
+        """Get estate unit(s)."""
         pass
 
     def patch(self, estate_id):
-        """
-        Edit an estate's units.
-        """
+        """Edit an estate's units."""
         pass

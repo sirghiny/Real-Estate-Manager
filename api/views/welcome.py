@@ -1,6 +1,4 @@
-"""
-Welcome to the API functionality.
-"""
+"""Welcome to the API functionality."""
 
 from flask_restful import Resource
 
@@ -8,14 +6,10 @@ from flask_restful import Resource
 
 
 class WelcomeResource(Resource):
-    """
-    Displays welcome message and any other introductory information.
-    """
+    """Displays welcome message and any other introductory information."""
 
     def get(self):
-        """
-        Get the welcome message an display it.
-        """
+        """Get the welcome message an display it."""
         return {
             'status': 'success',
             'data': {

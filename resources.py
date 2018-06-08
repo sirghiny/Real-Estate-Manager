@@ -1,3 +1,4 @@
+"""Register application resources."""
 from api.views.auth import AuthResource
 from api.views.board import (
     BoardMembersResource, BoardConversationResource,
@@ -13,10 +14,7 @@ from api.views.welcome import WelcomeResource
 
 
 def add_resources(api):
-    """
-    Add API resources to routes.
-    """
-
+    """Add API resources to routes."""
     api.add_resource(
         AuthResource,
         '/api/v1/signin',

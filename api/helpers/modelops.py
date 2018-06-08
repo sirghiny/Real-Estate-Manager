@@ -1,12 +1,11 @@
+"""Repetated model operations from a view function's persepective."""
 from api.helpers.auth import view_token
 from api.helpers.validation import validate_json
 from api.models import Board, Estate, Role, Unit, User
 
 
 def get_boards(board_id=None):
-    """
-    Get board(s).
-    """
+    """Get board(s)."""
     if board_id:
         board = Board.get(id=board_id)
         if isinstance(board, dict):
@@ -30,9 +29,7 @@ def get_boards(board_id=None):
 
 
 def get_conversations(request, conversation_id=None):
-    """
-    Get conversation(s) of a user.
-    """
+    """Get conversation(s) of a user."""
     user = User.get(id=view_token(
         request.headers.get('Authorization'))['id'])
     conversations = user.conversations
@@ -59,9 +56,7 @@ def get_conversations(request, conversation_id=None):
 
 
 def get_estates(estate_id=None):
-    """
-    Get estate(s).
-    """
+    """Get estate(s)."""
     if estate_id:
         estate = Estate.get(id=estate_id)
         if isinstance(estate, dict):
@@ -85,6 +80,7 @@ def get_estates(estate_id=None):
 
 
 def get_messages(request, conversation_id, message_id=None):
+    """Get message(s)."""
     conversation = get_conversations(request, conversation_id)
     if isinstance(conversation, dict):
         return conversation
@@ -113,9 +109,7 @@ def get_messages(request, conversation_id, message_id=None):
 
 
 def get_roles(role_id=None):
-    """
-    Get role(s).
-    """
+    """Get role(s)."""
     if role_id:
         role = Role.get(id=role_id)
         if isinstance(role, dict):
@@ -139,9 +133,7 @@ def get_roles(role_id=None):
 
 
 def get_units(unit_id=None):
-    """
-    Get unit(s).
-    """
+    """Get unit(s)."""
     if unit_id:
         unit = Unit.get(id=unit_id)
         if isinstance(unit, dict):
@@ -165,9 +157,7 @@ def get_units(unit_id=None):
 
 
 def get_user(request, user_id=None):
-    """
-    Get user(s).
-    """
+    """Get user(s)."""
     if user_id:
         user = User.get(id=user_id)
         if isinstance(user, dict):
@@ -192,6 +182,7 @@ def get_user(request, user_id=None):
 
 
 def get_users():
+    """Get users."""
     users = User.get_all()
     if isinstance(users, dict):
         return {
@@ -208,6 +199,7 @@ def get_users():
 
 
 def search_users(name):
+    """Search for user."""
     users = User.search(name=name)
     if isinstance(users, dict) is False:
         return {
@@ -225,6 +217,7 @@ def search_users(name):
 
 
 def update_resource(request, resource):
+    """Update a single resource."""
     payload = request.get_json()
     val_result = validate_json(['new_data'], payload)
     if isinstance(val_result, bool) is True:

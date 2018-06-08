@@ -1,7 +1,4 @@
-"""
-Authorization functionality.
-Allows log in of a user.
-"""
+"""Authorization functionality."""
 
 from flask import request
 from flask_restful import Resource
@@ -15,14 +12,10 @@ from api.models import User
 
 
 class AuthResource(Resource):
-    """
-    Resource to handle authorization.
-    """
+    """Resource to handle authorization."""
 
     def post(self):
-        """
-        Sign a user in.
-        """
+        """Sign a user in."""
         payload = request.get_json()
         required = ['email', 'password']
         result = validate_json(required, payload)

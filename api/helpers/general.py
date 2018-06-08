@@ -1,14 +1,10 @@
-"""
-General helper functions.
-"""
+"""General helper functions."""
 
 from hashlib import sha512
 
 
 def is_substring(sub, main):
-    """
-    Check if a string is a substring of another.
-    """
+    """Check if a string is a substring of another."""
     sub, main = sub.lower(), main.lower()
     subs = []
     for i in range(0, len(main) - len(sub)):
@@ -19,7 +15,5 @@ def is_substring(sub, main):
 
 
 def digest(string):
-    """
-    Return a SHA512 DIGEST OF A string.
-    """
+    """Return a SHA512 DIGEST OF A string."""
     return sha512(string.encode('utf-8')).hexdigest()

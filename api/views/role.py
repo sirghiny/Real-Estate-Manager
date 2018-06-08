@@ -1,6 +1,4 @@
-"""
-Role manipulation functionality.
-"""
+"""Role manipulation functionality."""
 
 from flask_restful import Resource
 
@@ -9,15 +7,11 @@ from api.helpers.modelops import get_roles
 
 
 class RoleResource(Resource):
-    """
-    View functions for roles.
-    """
+    """View functions for roles."""
 
     @token_required
     def get(self, role_id=None):
-        """
-        View basic role(s) information.
-        """
+        """View basic role(s) information."""
         result = get_roles(role_id)
         if isinstance(result, dict):
             return result, 404
@@ -34,15 +28,11 @@ class RoleResource(Resource):
 
 
 class RoleUsersResource(Resource):
-    """
-    View functions for a role's users.
-    """
+    """View functions for a role's users."""
 
     @token_required
     def get(self, role_id):
-        """
-        View the user's of a role.
-        """
+        """View the user's of a role."""
         result = get_roles(role_id)
         if isinstance(result, dict):
             return result, 404

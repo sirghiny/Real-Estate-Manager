@@ -1,14 +1,10 @@
-"""
-Helper functions for validation.
-"""
+"""Helper functions for validation."""
 
 # pylint:disable=no-else-return
 
 
 def validate_json(keys, json_like_object, empty=False):
-    """
-    Check if keys are present.
-    """
+    """Check if keys are present."""
     missing = ""
     for key in keys:
         try:

@@ -1,6 +1,4 @@
-"""
-User manipulation functionality.
-"""
+"""User manipulation functionality."""
 
 from flask import request
 from flask_restful import Resource
@@ -16,14 +14,10 @@ from api.models import Role, User, Wallet
 
 
 class UserResource(Resource):
-    """
-    View functions for users.
-    """
+    """View functions for users."""
 
     def post(self):
-        """
-        Create a new user.
-        """
+        """Create a new user."""
         payload = request.get_json()
         required = ['email', 'name', 'password', 'phone_number']
         result = validate_json(required, payload)
@@ -51,9 +45,7 @@ class UserResource(Resource):
 
     @token_required
     def get(self, user_id=None):
-        """
-        View a user's information.
-        """
+        """View a user's information."""
         if request.args.get('q'):
             result = search_users(request.args.get('q'))
             if 'message' in result:
@@ -71,9 +63,7 @@ class UserResource(Resource):
                 }, 200
 
     def patch(self):
-        """
-        Edit a user's information.
-        """
+        """Edit a user's information."""
         result = get_user(request)
         if isinstance(result, dict):
             return result, 404
@@ -90,9 +80,7 @@ class UserResource(Resource):
                 return update_result, 400
 
     def delete(self):
-        """
-        Delete a user.
-        """
+        """Delete a user."""
         result = get_user(request)
         if isinstance(result, dict):
             return result, 404
@@ -107,14 +95,10 @@ class UserResource(Resource):
 
 
 class UsersResource(Resource):
-    """
-    View functions for users in multiple numbers.
-    """
+    """View functions for users in multiple numbers."""
 
     def get(self):
-        """
-        Get several users.
-        """
+        """Get several users."""
         result = get_users()
         if 'message' in result:
             return result, 404
@@ -123,15 +107,11 @@ class UsersResource(Resource):
 
 
 class UserBoardsResource(Resource):
-    """
-    View functions for a user's boards.
-    """
+    """View functions for a user's boards."""
 
     @token_required
     def get(self, user_id):
-        """
-        View a user's boards.
-        """
+        """View a user's boards."""
         result = get_user(request, user_id)
         if isinstance(result, dict):
             return result, 404
@@ -151,15 +131,11 @@ class UserBoardsResource(Resource):
 
 
 class UserRolesResource(Resource):
-    """
-    View functions for user's roles.
-    """
+    """View functions for user's roles."""
 
     @token_required
     def get(self, user_id):
-        """
-        View a user's roles.
-        """
+        """View a user's roles."""
         result = get_user(request, user_id)
         if isinstance(result, dict):
             return result, 404
@@ -171,15 +147,11 @@ class UserRolesResource(Resource):
 
 
 class UserWalletResource(Resource):
-    """
-    View functions for user's wallet.
-    """
+    """View functions for user's wallet."""
 
     @token_required
     def get(self):
-        """
-        View a user's wallet.
-        """
+        """View a user's wallet."""
         result = get_user(request)
         if isinstance(result, dict):
             return result, 404

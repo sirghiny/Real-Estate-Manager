@@ -1,6 +1,4 @@
-"""
-Conversation and Message manipulation functionality.
-"""
+"""Conversation and Message manipulation functionality."""
 
 from flask import request
 from flask_restful import Resource
@@ -13,15 +11,11 @@ from api.models import Conversation, User
 
 
 class ConversationResource(Resource):
-    """
-    Conversation view functions
-    """
+    """Conversation view functions."""
 
     @token_required
     def post(self):
-        """
-        Create a conversation.
-        """
+        """Create a conversation."""
         payload = request.get_json()
         required = ['participants']
         result = validate_json(required, payload, empty=True)
@@ -54,9 +48,7 @@ class ConversationResource(Resource):
 
     @token_required
     def get(self, conversation_id=None):
-        """
-        Get a user's conversation(s).
-        # """
+        """Get a user's conversation(s)."""
         result = get_conversations(request, conversation_id)
         if isinstance(result, dict):
             return result, 404
@@ -74,6 +66,7 @@ class ConversationResource(Resource):
     def delete(self, conversation_id):
         """
         Delete a conversation.
+
         Remove user, only delete if last member deletes.
         """
         result = get_conversations(request, conversation_id)

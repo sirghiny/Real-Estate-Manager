@@ -1,6 +1,4 @@
-"""
-Board manipulation functionality.
-"""
+"""Board manipulation functionality."""
 
 from flask import request
 from flask_restful import Resource
@@ -11,14 +9,10 @@ from api.models import Board, Conversation, User
 
 
 class BoardResource(Resource):
-    """
-    View functions for boards.
-    """
+    """View functions for boards."""
 
     def get(self, board_id=None):
-        """
-        View a board.
-        """
+        """View a board."""
         result = get_boards(board_id)
         if isinstance(result, dict):
             return result, 404
@@ -38,9 +32,7 @@ class BoardResource(Resource):
             }, 200
 
     def post(self):
-        """
-        Create a board.
-        """
+        """Create a board."""
         payload = request.get_json()
         required = ['members']
         result = validate_json(required, payload, empty=True)
@@ -73,9 +65,7 @@ class BoardResource(Resource):
             }, 201
 
     def delete(self, board_id):
-        """
-        Delete a board.
-        """
+        """Delete a board."""
         result = get_boards(board_id)
         if isinstance(result, dict):
             return result, 404
@@ -88,14 +78,10 @@ class BoardResource(Resource):
 
 
 class BoardConversationResource(Resource):
-    """
-    View functions for board conversations.
-    """
+    """View functions for board conversations."""
 
     def get(self, board_id):
-        """
-        View a board's conversation.
-        """
+        """View a board's conversation."""
         result = get_boards(board_id)
         if isinstance(result, dict):
             return result, 404
@@ -109,14 +95,10 @@ class BoardConversationResource(Resource):
 
 
 class BoardEstatesResource(Resource):
-    """
-    View functions for a board's estates.
-    """
+    """View functions for a board's estates."""
 
     def get(self, board_id):
-        """
-        Get a board's estates.
-        """
+        """Get a board's estates."""
         result = get_boards(board_id)
         if isinstance(result, dict):
             return result, 404
@@ -131,14 +113,10 @@ class BoardEstatesResource(Resource):
 
 
 class BoardMembersResource(Resource):
-    """
-    View functions for board members.
-    """
+    """View functions for board members."""
 
     def get(self, board_id):
-        """
-        View members of a board.
-        """
+        """View members of a board."""
         board = Board.get(id=board_id)
         if isinstance(board, dict):
             return {
@@ -166,9 +144,7 @@ class BoardMembersResource(Resource):
                 }, 200
 
     def patch(self, board_id):
-        """
-        Add or remove board members.
-        """
+        """Add or remove board members."""
         payload = request.get_json()
         required = ['new_data']
         result = validate_json(required, payload, empty=True)
@@ -219,14 +195,10 @@ class BoardMembersResource(Resource):
 
 
 class BoardUnitsResource(Resource):
-    """
-    View functions for a board's units.
-    """
+    """View functions for a board's units."""
 
     def get(self, board_id):
-        """
-        Get a board's units.
-        """
+        """Get a board's units."""
         result = get_boards(board_id)
         if isinstance(result, dict):
             return result, 404
