@@ -4,12 +4,15 @@
 from os import getenv
 from unittest import TestCase
 
+from sqlalchemy import create_engine
 
 from api.helpers.general import digest
 from api.models import (
     db, Board, Conversation, Deposit, Estate,
     Message, Payment, Role, Unit, User, Wallet)
 from main import create_app
+
+create_engine('sqlite:///:memory:')
 
 
 class BaseCase(TestCase):

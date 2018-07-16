@@ -7,8 +7,8 @@ from flask_restful import Api
 
 from api.models import db
 
-from config import configurations
-from resources import add_resources
+from .config import configurations
+from .resources import add_resources
 
 
 def create_app(configuration):

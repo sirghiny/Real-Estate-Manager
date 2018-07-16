@@ -1,7 +1,6 @@
 """Application configurations."""
 
 from os import getenv
-from sqlalchemy import create_engine
 
 
 # pylint:disable=too-few-public-methods, invalid-name
@@ -17,7 +16,6 @@ class Config(object):
 class TestingConfig(Config):
     """Configuration for testing environment."""
 
-    create_engine('sqlite:///:memory:')
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
