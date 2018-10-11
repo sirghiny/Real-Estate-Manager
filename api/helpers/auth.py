@@ -88,3 +88,29 @@ def token_required(f):
                 "message": str(e)
             }, 400
     return decorated
+
+
+def requires_role(role):
+    """Define the decorator's wrapper."""
+    def check_role(f):
+        """Confirm the user who made a request has a required role."""
+        @wraps(f)
+        def wrapper(request, *args, **kwargs):
+            """Carry out check_role functionality."""
+            token = request.headers.get('Authorization')
+            decoded_token = decode(
+                token,
+                getenv('JWT_KEY'),
+                algorithms=['HS256'],
+                options={
+                    'verify_signature': True})
+            if role in decoded_token['roles']:
+                return f(*args, **kwargs)
+            else:
+                return {
+                    "status": "fail",
+                    "error": "Bad request",
+                    "message": "Unauthorized."
+                }, 401
+        return wrapper
+    return check_role
