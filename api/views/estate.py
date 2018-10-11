@@ -76,10 +76,6 @@ class EstatePaymentResource(Resource):
                 'data': {'payment': payment}
             }, 200
 
-    def patch(self):
-        """Make a deposit for an estate's payment."""
-        pass
-
     def delete(self, estate_id):
         """Clear an estate's payment history."""
         result = get_estates(estate_id)
@@ -91,15 +87,3 @@ class EstatePaymentResource(Resource):
                 'status': 'success',
                 'message': 'The estate has been deleted.'
             }, 200
-
-
-class EstateUnitsResource(Resource):
-    """View functions for estate units."""
-
-    def get(self, unit_id=None):
-        """Get estate unit(s)."""
-        pass
-
-    def patch(self, estate_id):
-        """Edit an estate's units."""
-        pass
